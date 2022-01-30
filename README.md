@@ -36,7 +36,16 @@ APDS9960.proximity(sensor)
 
 ### RGB Color Sensing
 
-TODO
+```elixir
+# Initialize the sensor
+sensor = APDS9960.init()
+
+# To get a color measurement, first enable the color engine
+APDS9960.enable(sensor, :color)
+
+# Retrieve the red, green, blue and clear color values as 16-bit values for each
+APDS9960.color(sensor)
+```
 
 ### Gesture detection
 

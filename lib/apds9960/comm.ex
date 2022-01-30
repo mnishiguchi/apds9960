@@ -115,6 +115,7 @@ defmodule APDS9960.Comm do
   end
 
   ## 0x94 CDATAL Read-only Color data (2 bytes
+
   @spec color_data(Transport.t()) :: {:ok, struct}
   def color_data(%Transport{} = i2c) do
     {:ok, data} = i2c.write_read_fn.([Register.CDATAL.address()], 8)
