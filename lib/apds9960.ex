@@ -1,6 +1,6 @@
 defmodule APDS9960 do
   @moduledoc """
-  Use the digital Color, proximity and gesture sensor `APDS9960` in Elixir.
+  Use `APDS9960` color, proximity and gesture sensor in Elixir.
   """
 
   alias APDS9960.{Comm, Transport}
@@ -12,24 +12,19 @@ defmodule APDS9960 do
   typedstruct do
     @typedoc "The APDS9960 sensor"
 
-    field(:rotation, rotation, enforce: true)
     field(:transport, Transport.t(), enforce: true)
   end
 
   @typedoc "The APDS9960 sensor option"
   @type option() :: [
           {:bus_name, binary}
-          | {:rotation, rotation}
           | {:reset, boolean}
           | {:set_defaults, boolean}
         ]
 
-  @typedoc "The rotation of the device"
-  @type rotation :: 0 | 90 | 180 | 270
-
   @type engine :: :color | :als | :proximity | :gesture
 
-  @type gesture :: :up | :down | :left | :right
+  @type gesture_direction :: :up | :down | :left | :right
 
   @doc """
   Initializes the I2C bus and sensor.
@@ -37,12 +32,10 @@ defmodule APDS9960 do
   @spec init([option]) :: t()
   def init(opts \\ []) do
     bus_name = Access.get(opts, :bus_name, "i2c-1")
-    rotation = Access.get(opts, :rotation, 0)
     reset = Access.get(opts, :reset, true)
     set_defaults = Access.get(opts, :set_defaults, true)
 
     sensor = %__MODULE__{
-      rotation: rotation,
       transport: Transport.new(bus_name, @i2c_address)
     }
 
@@ -51,7 +44,7 @@ defmodule APDS9960 do
     if reset, do: reset!(sensor)
     if set_defaults, do: set_defaults!(sensor)
 
-    sensor
+    %__MODULE__{} = sensor
   end
 
   @spec ensure_connected!(t()) :: :ok
@@ -181,6 +174,23 @@ defmodule APDS9960 do
   def color(%__MODULE__{transport: i2c}) do
     {:ok, struct} = Comm.color_data(i2c)
     Map.from_struct(struct)
+  end
+
+  @doc """
+  Reads new gesture engine results, deduces gesture and returns the direction of the gesture.
+
+      # To get a gesture result, first enable both the proximity engine and gesture engine.
+      APDS9960.enable(sensor, :gesture)
+      APDS9960.enable(sensor, :proximity)
+
+      APDS9960.gesture(sensor, timeout: 5000)
+
+  """
+  @spec gesture(t(), Enum.t()) :: gesture_direction | {:error, any}
+  def gesture(sensor, opts \\ []) do
+    sensor
+    |> APDS9960.Gesture.new()
+    |> APDS9960.Gesture.read_gesture(opts)
   end
 
   @doc """

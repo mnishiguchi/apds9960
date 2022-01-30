@@ -8,7 +8,7 @@ defmodule APDS9960.MixProject do
     [
       app: :apds9960,
       version: @version,
-      description: "Use APDS9960 Color, proximity and gesture sensor in Elixir",
+      description: "Use APDS9960 color, proximity and gesture sensor in Elixir",
       elixir: "~> 1.10",
       start_permanent: Mix.env() == :prod,
       deps: deps(),

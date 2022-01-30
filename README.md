@@ -4,7 +4,7 @@
 [![API docs](https://img.shields.io/hexpm/v/apds9960.svg?label=docs 'API docs')](https://hexdocs.pm/apds9960)
 [![CI](https://github.com/mnishiguchi/apds9960/actions/workflows/ci.yml/badge.svg)](https://github.com/mnishiguchi/apds9960/actions/workflows/ci.yml)
 
-Use the digital Color, proximity and gesture sensor `APDS9960` in Elixir.
+Use `APDS9960` color, proximity and gesture sensor in Elixir.
 
 ## Installation
 
@@ -67,7 +67,23 @@ APDS9960.color(sensor)
 
 ### Gesture detection
 
-Coming soon
+**Initialize the sensor**
 
+```elixir
+sensor = APDS9960.init()
+```
+
+**Enable the proximity and gesture engines**
+
+```elixir
+APDS9960.enable(sensor, :proximity)
+APDS9960.enable(sensor, :gesture)
+```
+
+**Detect gesture direction**
+
+```elixir
+APDS9960.gesture(sensor, timeout: 5000)
+```
 
 For more information, see [API reference](https://hexdocs.pm/apds9960/api-reference.html).
