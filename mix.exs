@@ -7,7 +7,8 @@ defmodule APDS9960.MixProject do
       version: "0.1.0",
       elixir: "~> 1.13",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      aliases: aliases()
     ]
   end
 
@@ -27,6 +28,14 @@ defmodule APDS9960.MixProject do
       {:ex_doc, "~> 0.28", only: :docs, runtime: false},
       {:mix_test_watch, "~> 1.1", only: :dev, runtime: false},
       {:typed_struct, "~> 0.2.1"}
+    ]
+  end
+
+  # Aliases are shortcuts or tasks specific to the current project.
+  # See the documentation for `Mix` for more info on aliases.
+  defp aliases do
+    [
+      format: ["format", "credo --strict"]
     ]
   end
 end
