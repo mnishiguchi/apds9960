@@ -66,8 +66,7 @@ defmodule APDS9960 do
     :ok = Comm.set_enable(i2c, gesture: 0, proximity: 0, als: 0)
 
     # Reset basic config registers to power-on defaults
-    :ok = Comm.set_proximity_l_threshold(i2c, <<0>>)
-    :ok = Comm.set_proximity_h_threshold(i2c, <<0>>)
+    :ok = Comm.set_proximity_threshold(i2c, {0, 0})
     :ok = Comm.set_interrupt_persistence(i2c, <<0>>)
     :ok = Comm.set_gesture_proximity_enter_threshold(i2c, <<0>>)
     :ok = Comm.set_gesture_exit_threshold(i2c, <<0>>)
@@ -95,8 +94,7 @@ defmodule APDS9960 do
   @spec set_defaults!(t()) :: :ok
   def set_defaults!(%__MODULE__{transport: i2c}) do
     # Trigger proximity interrupt at >= 5, PPERS: 4 cycles
-    :ok = Comm.set_proximity_l_threshold(i2c, <<0>>)
-    :ok = Comm.set_proximity_h_threshold(i2c, <<5>>)
+    :ok = Comm.set_proximity_threshold(i2c, {0, 5})
     :ok = Comm.set_interrupt_persistence(i2c, proximity: 4)
 
     # Enter gesture engine at >= 5 proximity counts

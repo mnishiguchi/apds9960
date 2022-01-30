@@ -4,7 +4,7 @@ defmodule APDS9960.Register do
   @doc """
   Sets only specified bit values in a register value struct.
   """
-  @spec set_bits(struct(), Enum.t()) :: struct()
+  @spec set_bits(struct, Enum.t()) :: struct
   def set_bits(parsed_data, opts) when is_struct(parsed_data) do
     struct!(parsed_data, opts)
   end
@@ -19,25 +19,22 @@ defmodule APDS9960.Register do
     |> parsed_data.__struct__.data()
   end
 
-  defmodule RAM do
-    @moduledoc false
-    def address, do: 0x00
-  end
-
+  # 0x80 ENABLE Read/Write Enable states and interrupts 0x00
   defmodule ENABLE do
     @moduledoc false
     def address, do: 0x80
 
-    # Before enabling Gesture, Proximity, or ALS, all of the bits associated with control of the
-    # desired function must be set. Changing control register values while operating may result in
-    # invalid results.
-    defstruct gesture: 0,
-              proximity_interrupt: 0,
-              als_interrupt: 0,
-              wait: 0,
-              proximity: 0,
-              als: 0,
-              power: 0
+    use TypedStruct
+
+    typedstruct do
+      field(:gesture, 0 | 1, default: 0)
+      field(:proximity_interrupt, 0 | 1, default: 0)
+      field(:als_interrupt, 0 | 1, default: 0)
+      field(:wait, 0 | 1, default: 0)
+      field(:proximity, 0 | 1, default: 0)
+      field(:als, 0 | 1, default: 0)
+      field(:power, 0 | 1, default: 0)
+    end
 
     @spec data(Enum.t()) :: <<_::8>>
     def data(opts \\ []) do
@@ -54,7 +51,7 @@ defmodule APDS9960.Register do
       <<0::1, b6::1, b5::1, b4::1, b3::1, b2::1, b1::1, b0::1>>
     end
 
-    @spec parse(<<_::8>>) :: %__MODULE__{}
+    @spec parse(<<_::8>>) :: t()
     def parse(<<0::1, b6::1, b5::1, b4::1, b3::1, b2::1, b1::1, b0::1>>) do
       %__MODULE__{
         gesture: b6,
@@ -68,52 +65,60 @@ defmodule APDS9960.Register do
     end
   end
 
+  # 0x81 ATIME Read/Write ADC integration time
   defmodule ATIME do
     @moduledoc false
     def address, do: 0x81
   end
 
+  # 0x83 WTIME Read/Write Wait time (non-gesture)
   defmodule WTIME do
     @moduledoc false
     def address, do: 0x83
   end
 
-  defmodule AILTIL do
+  # 0x84 AILTL Read/Write ALS interrupt low/high thresholds
+  defmodule AILTL do
     @moduledoc false
     def address, do: 0x84
   end
 
-  defmodule AILTH do
-    @moduledoc false
-    def address, do: 0x85
-  end
-
-  defmodule AIHTL do
-    @moduledoc false
-    def address, do: 0x86
-  end
-
-  defmodule AIHTH do
-    @moduledoc false
-    def address, do: 0x87
-  end
-
+  # 0x89 PILT Read/Write Proximity interrupt low/high thresholds
   defmodule PILT do
     @moduledoc false
     def address, do: 0x89
+
+    use TypedStruct
+
+    typedstruct do
+      field(:low, 0 | 1, default: 0)
+      field(:high, 0 | 1, default: 0)
+    end
+
+    @spec data(Enum.t()) :: <<_::16>>
+    def data(opts \\ []) do
+      d = struct!(__MODULE__, opts)
+
+      <<d.low, d.high>>
+    end
+
+    @spec parse(<<_::16>>) :: t()
+    def parse(<<low, high>>) do
+      %__MODULE__{low: low, high: high}
+    end
   end
 
-  defmodule PIHT do
-    @moduledoc false
-    def address, do: 0x8B
-  end
-
+  # 0x8C PERS Read/Write Interrupt persistence filters (non-gesture)
   defmodule PERS do
     @moduledoc false
     def address, do: 0x8C
 
-    defstruct proximity: 0,
-              als: 0
+    use TypedStruct
+
+    typedstruct do
+      field(:proximity, 0..15, default: 0)
+      field(:als, 0..15, default: 0)
+    end
 
     @spec data(Enum.t()) :: <<_::8>>
     def data(opts \\ []) do
@@ -125,7 +130,7 @@ defmodule APDS9960.Register do
       <<b74::4, b30::4>>
     end
 
-    @spec parse(<<_::8>>) :: %__MODULE__{}
+    @spec parse(<<_::8>>) :: t()
     def parse(<<b74::4, b30::4>>) do
       %__MODULE__{
         proximity: b74,
@@ -134,23 +139,30 @@ defmodule APDS9960.Register do
     end
   end
 
+  # 0x8D CONFIG1 Read/Write Configuration register one
   defmodule CONFIG1 do
     @moduledoc false
     def address, do: 0x8D
   end
 
+  # 0x8E PPULSE Read/Write Proximity pulse count and length
   defmodule PPULSE do
     @moduledoc false
     def address, do: 0x8E
   end
 
+  # 0x8F CONTROL Read/Write Gain control
   defmodule CONTROL do
     @moduledoc false
     def address, do: 0x8F
 
-    defstruct led_drive_strength: 0,
-              proximity_gain: 0,
-              als_and_color_gain: 0
+    use TypedStruct
+
+    typedstruct do
+      field(:led_drive_strength, 0..3, default: 0)
+      field(:proximity_gain, 0..3, default: 0)
+      field(:als_and_color_gain, 0..3, default: 0)
+    end
 
     @spec data(Enum.t()) :: <<_::8>>
     def data(opts \\ []) do
@@ -163,7 +175,7 @@ defmodule APDS9960.Register do
       <<b76::2, 0::2, b32::2, b10::2>>
     end
 
-    @spec parse(<<_::8>>) :: %__MODULE__{}
+    @spec parse(<<_::8>>) :: t()
     def parse(<<b76::2, 0::2, b32::2, b10::2>>) do
       %__MODULE__{
         led_drive_strength: b76,
@@ -173,29 +185,64 @@ defmodule APDS9960.Register do
     end
   end
 
+  # 0x90 CONFIG2 Read/Write Configuration register two
   defmodule CONFIG2 do
     @moduledoc false
     def address, do: 0x90
+
+    use TypedStruct
+
+    typedstruct do
+      field(:proximity_saturation_interrupt, 0 | 1, default: 0)
+      field(:als_saturation_interrupt, 0 | 1, default: 0)
+      field(:led_boost, 0..3, default: 0)
+    end
+
+    @spec data(Enum.t()) :: <<_::8>>
+    def data(opts \\ []) do
+      d = struct!(__MODULE__, opts)
+
+      b7 = d.proximity_saturation_interrupt
+      b6 = d.als_saturation_interrupt
+      b54 = d.led_boost
+
+      <<b7::1, b6::1, b54::2, 0::3, 1::1>>
+    end
+
+    @spec parse(<<_::8>>) :: t()
+    def parse(<<b7::1, b6::1, b54::2, _::3, _::1>>) do
+      %__MODULE__{
+        proximity_saturation_interrupt: b7,
+        als_saturation_interrupt: b6,
+        led_boost: b54
+      }
+    end
   end
 
+  # 0x92 ID Read-only Device ID
   defmodule ID do
     @moduledoc false
     def address, do: 0x92
   end
 
+  # 0x93 STATUS Read-only Device status 0x00
   defmodule STATUS do
     @moduledoc false
     def address, do: 0x93
 
-    defstruct clear_photo_diode_saturation: 0,
-              proximity_or_gesture_saturation: 0,
-              proximity_interrupt: 0,
-              als_interrupt: 0,
-              gesture_interrupt: 0,
-              proximity_valid: 0,
-              als_valid: 0
+    use TypedStruct
 
-    @spec parse(<<_::8>>) :: %__MODULE__{}
+    typedstruct do
+      field(:clear_photo_diode_saturation, 0 | 1, default: 0)
+      field(:proximity_or_gesture_saturation, 0 | 1, default: 0)
+      field(:proximity_interrupt, 0 | 1, default: 0)
+      field(:als_interrupt, 0 | 1, default: 0)
+      field(:gesture_interrupt, 0 | 1, default: 0)
+      field(:proximity_valid, 0 | 1, default: 0)
+      field(:als_valid, 0 | 1, default: 0)
+    end
+
+    @spec parse(<<_::8>>) :: t()
     def parse(<<b7::1, b6::1, b5::1, b4::1, _::1, b2::1, b1::1, b0::1>>) do
       %__MODULE__{
         clear_photo_diode_saturation: b7,
@@ -209,98 +256,74 @@ defmodule APDS9960.Register do
     end
   end
 
+  # 0x94 CDATAL Read-only RGBC data
   defmodule CDATAL do
     @moduledoc false
     def address, do: 0x94
 
-    defstruct red: 0,
-              green: 0,
-              blue: 0,
-              clear: 0
+    use TypedStruct
 
-    @spec parse(<<_::64>>) :: %__MODULE__{}
+    typedstruct do
+      field(:red, 0..0xFFFF, enforce: true)
+      field(:green, 0..0xFFFF, enforce: true)
+      field(:blue, 0..0xFFFF, enforce: true)
+      field(:clear, 0..0xFFFF, enforce: true)
+    end
+
+    @spec parse(<<_::64>>) :: t()
     def parse(<<clear::little-16, red::little-16, green::little-16, blue::little-16>>) do
-      %__MODULE__{
-        red: red,
-        green: green,
-        blue: blue,
-        clear: clear
-      }
+      %__MODULE__{red: red, green: green, blue: blue, clear: clear}
     end
   end
 
-  defmodule CDATAH do
-    @moduledoc false
-    def address, do: 0x95
-  end
-
-  defmodule RDATAL do
-    @moduledoc false
-    def address, do: 0x96
-  end
-
-  defmodule RDATAH do
-    @moduledoc false
-    def address, do: 0x97
-  end
-
-  defmodule GDATAL do
-    @moduledoc false
-    def address, do: 0x98
-  end
-
-  defmodule GDATAH do
-    @moduledoc false
-    def address, do: 0x99
-  end
-
-  defmodule BDATAL do
-    @moduledoc false
-    def address, do: 0x9A
-  end
-
-  defmodule BDATAH do
-    @moduledoc false
-    def address, do: 0x9B
-  end
-
+  # 0x9C PDATA Read-only Proximity data
   defmodule PDATA do
     @moduledoc false
     def address, do: 0x9C
   end
 
+  # 0x9D POFFSET_UR Read/Write Proximity offset for UP and RIGHT photodiodes
   defmodule POFFSET_UR do
     @moduledoc false
     def address, do: 0x9D
   end
 
+  # 0x9E POFFSET_DL Read/Write Proximity offset for DOWN and LEFT photodiodes
   defmodule POFFSET_DL do
     @moduledoc false
     def address, do: 0x9E
   end
 
+  # 0x9F CONFIG3 Read/Write Configuration register three
   defmodule CONFIG3 do
     @moduledoc false
     def address, do: 0x9F
   end
 
+  # 0xA0 GPENTH Read/Write Gesture proximity enter threshold
   defmodule GPENTH do
     @moduledoc false
     def address, do: 0xA0
   end
 
+  # 0xA1 GEXTH Read/Write Gesture exit threshold
   defmodule GEXTH do
     @moduledoc false
     def address, do: 0xA1
   end
 
+  # 0xA2 GCONF1 Read/Write Gesture configuration one
   defmodule GCONF1 do
     @moduledoc false
     def address, do: 0xA2
 
-    defstruct gesture_fifo_threshold: 0,
-              gesture_exit_mask: 0,
-              gesture_exit_persistence: 0
+    use TypedStruct
+
+    typedstruct do
+      field(:gesture_fifo_threshold, 0..3, default: 0)
+      field(:gesture_exit_mask, 0x0000..0x1111, default: 0)
+      field(:gesture_exit_persistence, 0..3, default: 0)
+    end
 
     @spec data(Enum.t()) :: <<_::8>>
     def data(opts \\ []) do
@@ -313,7 +336,7 @@ defmodule APDS9960.Register do
       <<b76::2, b52::4, b10::2>>
     end
 
-    @spec parse(<<_::8>>) :: %__MODULE__{}
+    @spec parse(<<_::8>>) :: t()
     def parse(<<b76::2, b52::4, b10::2>>) do
       %__MODULE__{
         gesture_fifo_threshold: b76,
@@ -323,13 +346,18 @@ defmodule APDS9960.Register do
     end
   end
 
+  # 0xA3 GCONF2 Read/Write Gesture configuration two
   defmodule GCONF2 do
     @moduledoc false
     def address, do: 0xA3
 
-    defstruct gesture_gain: 0,
-              gesture_led_drive_strength: 0,
-              gesture_wait_time: 0
+    use TypedStruct
+
+    typedstruct do
+      field(:gesture_gain, 0..3, default: 0)
+      field(:gesture_led_drive_strength, 0..3, default: 0)
+      field(:gesture_wait_time, 0..7, default: 0)
+    end
 
     @spec data(Enum.t()) :: <<_::8>>
     def data(opts \\ []) do
@@ -342,7 +370,7 @@ defmodule APDS9960.Register do
       <<0::1, b65::2, b43::2, b20::3>>
     end
 
-    @spec parse(<<_::8>>) :: %__MODULE__{}
+    @spec parse(<<_::8>>) :: t()
     def parse(<<0::1, b65::2, b43::2, b20::3>>) do
       %__MODULE__{
         gesture_gain: b65,
@@ -352,32 +380,42 @@ defmodule APDS9960.Register do
     end
   end
 
+  # 0xA4 GOFFSET_U Read/Write Gesture UP offset register
   defmodule GOFFSET_U do
     @moduledoc false
     def address, do: 0xA4
   end
 
+  # 0xA5 GOFFSET_D Read/Write Gesture DOWN offset register
   defmodule GOFFSET_D do
     @moduledoc false
     def address, do: 0xA5
   end
 
+  # 0xA7 GOFFSET_L Read/Write Gesture LEFT offset register
   defmodule GOFFSET_L do
     @moduledoc false
     def address, do: 0xA7
   end
 
+  # 0xA9 GOFFSET_R Read/Write Gesture RIGHT offset register
   defmodule GOFFSET_R do
     @moduledoc false
+    @spec address :: 169
     def address, do: 0xA9
   end
 
+  # 0xA6 GPULSE Read/Write Gesture pulse count and length
   defmodule GPULSE do
     @moduledoc false
     def address, do: 0xA6
 
-    defstruct gesture_pulse_length: 0,
-              gesture_pulse_count: 0
+    use TypedStruct
+
+    typedstruct do
+      field(:gesture_pulse_length, 0..3, default: 0)
+      field(:gesture_pulse_count, 0..63, default: 0)
+    end
 
     @spec data(Enum.t()) :: <<_::8>>
     def data(opts \\ []) do
@@ -389,7 +427,7 @@ defmodule APDS9960.Register do
       <<b76::2, b50::6>>
     end
 
-    @spec parse(<<_::8>>) :: %__MODULE__{}
+    @spec parse(<<_::8>>) :: t()
     def parse(<<b76::2, b50::6>>) do
       %__MODULE__{
         gesture_pulse_length: b76,
@@ -398,17 +436,23 @@ defmodule APDS9960.Register do
     end
   end
 
+  # 0xAA GCONF3 Read/Write Gesture configuration three
   defmodule GCONF3 do
     @moduledoc false
     def address, do: 0xAA
   end
 
+  # 0xAB GCONF4 Read/Write Gesture configuration four
   defmodule GCONF4 do
     @moduledoc false
     def address, do: 0xAB
 
-    defstruct gesture_interrupt: 0,
-              gesture_mode: 0
+    use TypedStruct
+
+    typedstruct do
+      field(:gesture_interrupt, 0 | 1, default: 0)
+      field(:gesture_mode, 0 | 1, default: 0)
+    end
 
     @spec data(Enum.t()) :: <<_::8>>
     def data(opts \\ []) do
@@ -420,7 +464,7 @@ defmodule APDS9960.Register do
       <<0::6, b1::1, b0::1>>
     end
 
-    @spec parse(<<_::8>>) :: %__MODULE__{}
+    @spec parse(<<_::8>>) :: t()
     def parse(<<0::6, b1::1, b0::1>>) do
       %__MODULE__{
         gesture_interrupt: b1,
@@ -429,19 +473,25 @@ defmodule APDS9960.Register do
     end
   end
 
+  # 0xAE GFLVL Read-only Gesture FIFO level
   defmodule GFLVL do
     @moduledoc false
     def address, do: 0xAE
   end
 
+  # 0xAF GSTATUS Read-only Gesture status
   defmodule GSTATUS do
     @moduledoc false
     def address, do: 0xAF
 
-    defstruct gesture_fifo_overflow: 0,
-              gesture_valid: 0
+    use TypedStruct
 
-    @spec parse(<<_::8>>) :: %__MODULE__{}
+    typedstruct do
+      field(:gesture_fifo_overflow, 0 | 1, default: 0)
+      field(:gesture_valid, 0 | 1, default: 0)
+    end
+
+    @spec parse(<<_::8>>) :: t()
     def parse(<<0::6, b1::1, b0::1>>) do
       %__MODULE__{
         gesture_fifo_overflow: b1,
@@ -450,43 +500,38 @@ defmodule APDS9960.Register do
     end
   end
 
+  # 0xE4 IFORCE W Force interrupt
   defmodule IFORCE do
     @moduledoc false
     def address, do: 0xE4
   end
 
+  # 0xE5 PICLEAR W Proximity interrupt clear
   defmodule PICLEAR do
     @moduledoc false
     def address, do: 0xE5
   end
 
+  # 0xE6 CICLEAR W ALS clear channel interrupt clear
   defmodule CICLEAR do
     @moduledoc false
     def address, do: 0xE6
   end
 
+  # 0xE7 AICLEAR W All non-gesture interrupts clear
   defmodule AICLEAR do
     @moduledoc false
     def address, do: 0xE7
   end
 
+  # 0xFC GFIFO_U Read-only Gesture FIFO UP/DOWN/LEFT/RIGHT values
   defmodule GFIFO_U do
     @moduledoc false
     def address, do: 0xFC
-  end
 
-  defmodule GFIFO_D do
-    @moduledoc false
-    def address, do: 0xFD
-  end
-
-  defmodule GFIFO_L do
-    @moduledoc false
-    def address, do: 0xFE
-  end
-
-  defmodule GFIFO_R do
-    @moduledoc false
-    def address, do: 0xFF
+    @spec parse(binary) :: [{byte, byte, byte, byte}]
+    def parse(data) do
+      for <<up, down, left, right <- data>>, do: {up, down, left, right}
+    end
   end
 end

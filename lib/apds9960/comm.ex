@@ -46,31 +46,23 @@ defmodule APDS9960.Comm do
 
   ## 0x89 PILT Read/Write Proximity interrupt low threshold
 
-  @spec get_proximity_l_threshold(Transport.t()) :: {:ok, <<_::8>>}
-  def get_proximity_l_threshold(%Transport{} = i2c) do
-    i2c.write_read_fn.([Register.PILT.address()], 1)
+  @spec get_proximity_thresholds(Transport.t()) :: {:ok, <<_::8>>}
+  def get_proximity_thresholds(%Transport{} = i2c) do
+    i2c.write_read_fn.([Register.PILT.address()], 2)
   end
 
-  @spec set_proximity_l_threshold(Transport.t(), <<_::8>>) :: :ok
-  def set_proximity_l_threshold(%Transport{} = i2c, <<byte>>) do
-    i2c.write_fn.([Register.PILT.address(), byte])
+  @spec set_proximity_threshold(Transport.t(), <<_::16>> | {low :: byte, high :: byte}) :: :ok
+  def set_proximity_threshold(%Transport{} = i2c, <<low, high>>) do
+    i2c.write_fn.([Register.PILT.address(), <<low, high>>])
   end
 
-  ## 0x8B PIHT Read/Write Proximity interrupt high threshold
-
-  @spec get_proximity_h_threshold(Transport.t()) :: {:ok, <<_::8>>}
-  def get_proximity_h_threshold(%Transport{} = i2c) do
-    i2c.write_read_fn.([Register.PIHT.address()], 1)
-  end
-
-  @spec set_proximity_h_threshold(Transport.t(), <<_::8>>) :: :ok
-  def set_proximity_h_threshold(%Transport{} = i2c, <<byte>>) do
-    i2c.write_fn.([Register.PIHT.address(), byte])
+  def set_proximity_threshold(%Transport{} = i2c, {low, high}) do
+    i2c.write_fn.([Register.PILT.address(), <<low, high>>])
   end
 
   ## 0x8C PERS Read/Write Interrupt persistence filters (non-gesture)
 
-  @spec get_interrupt_persistence(Transport.t()) :: {:ok, struct}
+  @spec get_interrupt_persistence(Transport.t()) :: {:ok, Register.PERS.t()}
   def get_interrupt_persistence(%Transport{} = i2c) do
     {:ok, data} = i2c.write_read_fn.([Register.PERS.address()], 1)
     {:ok, Register.PERS.parse(data)}
@@ -89,7 +81,7 @@ defmodule APDS9960.Comm do
 
   ## 0x8F CONTROL Read/Write Gain control
 
-  @spec get_control(Transport.t()) :: {:ok, struct}
+  @spec get_control(Transport.t()) :: {:ok, Register.CONTROL.t()}
   def get_control(%Transport{} = i2c) do
     {:ok, data} = i2c.write_read_fn.([Register.CONTROL.address()], 1)
     {:ok, Register.CONTROL.parse(data)}
@@ -108,7 +100,7 @@ defmodule APDS9960.Comm do
 
   ## 0x93 STATUS Read-only Device status
 
-  @spec status(Transport.t()) :: {:ok, struct}
+  @spec status(Transport.t()) :: {:ok, Register.STATUS.t()}
   def status(%Transport{} = i2c) do
     {:ok, data} = i2c.write_read_fn.([Register.STATUS.address()], 1)
     {:ok, Register.STATUS.parse(data)}
@@ -116,7 +108,7 @@ defmodule APDS9960.Comm do
 
   ## 0x94 CDATAL Read-only Color data (2 bytes
 
-  @spec color_data(Transport.t()) :: {:ok, struct}
+  @spec color_data(Transport.t()) :: {:ok, Register.CDATAL.t()}
   def color_data(%Transport{} = i2c) do
     {:ok, data} = i2c.write_read_fn.([Register.CDATAL.address()], 8)
     {:ok, Register.CDATAL.parse(data)}
@@ -145,7 +137,7 @@ defmodule APDS9960.Comm do
 
   ## 0xA2 GCONF1 Read/Write Gesture configuration one
 
-  @spec get_gesture_conf1(Transport.t()) :: {:ok, struct}
+  @spec get_gesture_conf1(Transport.t()) :: {:ok, Register.GCONF1.t()}
   def get_gesture_conf1(%Transport{} = i2c) do
     {:ok, data} = i2c.write_read_fn.([Register.GCONF1.address()], 1)
     {:ok, Register.GCONF1.parse(data)}
@@ -164,7 +156,7 @@ defmodule APDS9960.Comm do
 
   ## 0xA3 GCONF2 Read/Write Gesture configuration two
 
-  @spec get_gesture_conf2(Transport.t()) :: {:ok, struct}
+  @spec get_gesture_conf2(Transport.t()) :: {:ok, Register.GCONF2.t()}
   def get_gesture_conf2(%Transport{} = i2c) do
     {:ok, data} = i2c.write_read_fn.([Register.GCONF2.address()], 1)
     {:ok, Register.GCONF2.parse(data)}
@@ -183,7 +175,7 @@ defmodule APDS9960.Comm do
 
   ## 0xA6 GPULSE Read/Write Gesture pulse count and length
 
-  @spec get_gesture_pulse_count(Transport.t()) :: {:ok, struct}
+  @spec get_gesture_pulse_count(Transport.t()) :: {:ok, Register.GPULSE.t()}
   def get_gesture_pulse_count(%Transport{} = i2c) do
     {:ok, data} = i2c.write_read_fn.([Register.GPULSE.address()], 1)
     {:ok, Register.GPULSE.parse(data)}
@@ -202,7 +194,7 @@ defmodule APDS9960.Comm do
 
   ## 0xAB GCONF4 Read/Write Gesture configuration four
 
-  @spec get_gesture_conf4(Transport.t()) :: {:ok, struct}
+  @spec get_gesture_conf4(Transport.t()) :: {:ok, Register.GCONF4.t()}
   def get_gesture_conf4(%Transport{} = i2c) do
     {:ok, data} = i2c.write_read_fn.([Register.GCONF4.address()], 1)
     {:ok, Register.GCONF4.parse(data)}
@@ -228,7 +220,7 @@ defmodule APDS9960.Comm do
 
   ## 0xAF GSTATUS Read-only Gesture status
 
-  @spec gesture_status(Transport.t()) :: {:ok, struct}
+  @spec gesture_status(Transport.t()) :: {:ok, Register.GSTATUS.t()}
   def gesture_status(%Transport{} = i2c) do
     {:ok, data} = i2c.write_read_fn.([Register.GSTATUS.address()], 1)
     {:ok, Register.GSTATUS.parse(data)}
@@ -241,10 +233,11 @@ defmodule APDS9960.Comm do
     i2c.write_fn.([Register.AICLEAR.address()])
   end
 
-  ## 0xFC GFIFO_U Read-only Gesture FIFO UP value
+  ## 0xFC GFIFO_U Read-only Gesture FIFO UP/DOWN/LEFT/RIGHT values
 
-  @spec gesture_fifo_up(APDS9960.Transport.t()) :: {:ok, <<_::8>>}
-  def gesture_fifo_up(%Transport{} = i2c) do
-    i2c.write_read_fn.([Register.GFIFO_U.address()], 1)
+  @spec gesture_fifo(APDS9960.Transport.t(), byte) :: {:ok, [{byte, byte, byte, byte}]}
+  def gesture_fifo(%Transport{} = i2c, dataset_count) do
+    {:ok, data} = i2c.write_read_fn.([Register.GFIFO_U.address()], dataset_count * 4)
+    {:ok, Register.GFIFO_U.parse(data) |> Enum.slice(0, dataset_count)}
   end
 end
