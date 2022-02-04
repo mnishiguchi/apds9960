@@ -171,6 +171,21 @@ defmodule APDS9960 do
   end
 
   @doc """
+  Reads the color data.
+
+      # To get a color measurement, first enable the color engine.
+      APDS9960.enable_color(sensor)
+
+      APDS9960.color(sensor)
+
+  """
+  @spec color(t()) :: %{red: 0..0xFFFF, green: 0..0xFFFF, blue: 0..0xFFFF, clear: 0..0xFFFF}
+  def color(%__MODULE__{transport: i2c}) do
+    {:ok, struct} = Comm.color_data(i2c)
+    Map.from_struct(struct)
+  end
+
+  @doc """
   Enable an engine for a desired feature.
   """
   @spec enable(t(), engine) :: :ok
