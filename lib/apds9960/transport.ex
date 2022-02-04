@@ -7,10 +7,10 @@ defmodule APDS9960.Transport do
 
   typedstruct do
     field(:address, 0..127, enforce: true)
-    field(:read_fn, (... -> {:ok, binary} | {:error, any}), enforce: true)
+    field(:read_fn, (pos_integer -> {:ok, binary} | {:error, any}), enforce: true)
     field(:ref, reference, enforce: true)
-    field(:write_fn, (... -> :ok | {:error, any}), enforce: true)
-    field(:write_read_fn, (... -> {:ok, binary} | {:error, any}), enforce: true)
+    field(:write_fn, (iodata -> :ok | {:error, any}), enforce: true)
+    field(:write_read_fn, (iodata, pos_integer -> {:ok, binary} | {:error, any}), enforce: true)
   end
 
   @spec new(reference, 0..127) :: APDS9960.Transport.t()
