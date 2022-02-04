@@ -1,5 +1,9 @@
 # APDS9960
 
+[![Hex version](https://img.shields.io/hexpm/v/apds9960.svg 'Hex version')](https://hex.pm/packages/apds9960)
+[![API docs](https://img.shields.io/hexpm/v/apds9960.svg?label=docs 'API docs')](https://hexdocs.pm/apds9960)
+[![CI](https://github.com/mnishiguchi/apds9960/actions/workflows/ci.yml/badge.svg)](https://github.com/mnishiguchi/apds9960/actions/workflows/ci.yml)
+
 Use the digital Color, proximity and gesture sensor `APDS9960` in Elixir.
 ## Installation
 
