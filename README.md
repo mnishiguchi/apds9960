@@ -21,9 +21,9 @@ The proximity value is a number from 0 to 255 where the higher the number the cl
 
 ```elixir
 # Initialize the sensor
-sensor = APDS9960.new
+sensor = APDS9960.init()
 
-# To get a proximity result, first enable the proximity engine.
+# To get a proximity result, first enable the proximity engine
 APDS9960.enable(sensor, :proximity)
 
 # Measure proximity

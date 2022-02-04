@@ -34,8 +34,8 @@ defmodule APDS9960 do
   @doc """
   Initializes the I2C bus and sensor.
   """
-  @spec new([option]) :: t()
-  def new(opts \\ []) do
+  @spec init([option]) :: t()
+  def init(opts \\ []) do
     bus_name = Access.get(opts, :bus_name, "i2c-1")
     rotation = Access.get(opts, :rotation, 0)
     reset = Access.get(opts, :reset, true)
