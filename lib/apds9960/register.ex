@@ -21,12 +21,12 @@ defmodule APDS9960.Register do
 
   defmodule RAM do
     @moduledoc false
-    def address(), do: 0x00
+    def address, do: 0x00
   end
 
   defmodule ENABLE do
     @moduledoc false
-    def address(), do: 0x80
+    def address, do: 0x80
 
     # Before enabling Gesture, Proximity, or ALS, all of the bits associated with control of the
     # desired function must be set. Changing control register values while operating may result in
@@ -70,47 +70,47 @@ defmodule APDS9960.Register do
 
   defmodule ATIME do
     @moduledoc false
-    def address(), do: 0x81
+    def address, do: 0x81
   end
 
   defmodule WTIME do
     @moduledoc false
-    def address(), do: 0x83
+    def address, do: 0x83
   end
 
   defmodule AILTIL do
     @moduledoc false
-    def address(), do: 0x84
+    def address, do: 0x84
   end
 
   defmodule AILTH do
     @moduledoc false
-    def address(), do: 0x85
+    def address, do: 0x85
   end
 
   defmodule AIHTL do
     @moduledoc false
-    def address(), do: 0x86
+    def address, do: 0x86
   end
 
   defmodule AIHTH do
     @moduledoc false
-    def address(), do: 0x87
+    def address, do: 0x87
   end
 
   defmodule PILT do
     @moduledoc false
-    def address(), do: 0x89
+    def address, do: 0x89
   end
 
   defmodule PIHT do
     @moduledoc false
-    def address(), do: 0x8B
+    def address, do: 0x8B
   end
 
   defmodule PERS do
     @moduledoc false
-    def address(), do: 0x8C
+    def address, do: 0x8C
 
     defstruct proximity: 0,
               als: 0
@@ -136,17 +136,17 @@ defmodule APDS9960.Register do
 
   defmodule CONFIG1 do
     @moduledoc false
-    def address(), do: 0x8D
+    def address, do: 0x8D
   end
 
   defmodule PPULSE do
     @moduledoc false
-    def address(), do: 0x8E
+    def address, do: 0x8E
   end
 
   defmodule CONTROL do
     @moduledoc false
-    def address(), do: 0x8F
+    def address, do: 0x8F
 
     defstruct led_drive_strength: 0,
               proximity_gain: 0,
@@ -175,17 +175,17 @@ defmodule APDS9960.Register do
 
   defmodule CONFIG2 do
     @moduledoc false
-    def address(), do: 0x90
+    def address, do: 0x90
   end
 
   defmodule ID do
     @moduledoc false
-    def address(), do: 0x92
+    def address, do: 0x92
   end
 
   defmodule STATUS do
     @moduledoc false
-    def address(), do: 0x93
+    def address, do: 0x93
 
     defstruct clear_photo_diode_saturation: 0,
               proximity_or_gesture_saturation: 0,
@@ -211,7 +211,7 @@ defmodule APDS9960.Register do
 
   defmodule CDATAL do
     @moduledoc false
-    def address(), do: 0x94
+    def address, do: 0x94
 
     defstruct red: 0,
               green: 0,
@@ -231,72 +231,72 @@ defmodule APDS9960.Register do
 
   defmodule CDATAH do
     @moduledoc false
-    def address(), do: 0x95
+    def address, do: 0x95
   end
 
   defmodule RDATAL do
     @moduledoc false
-    def address(), do: 0x96
+    def address, do: 0x96
   end
 
   defmodule RDATAH do
     @moduledoc false
-    def address(), do: 0x97
+    def address, do: 0x97
   end
 
   defmodule GDATAL do
     @moduledoc false
-    def address(), do: 0x98
+    def address, do: 0x98
   end
 
   defmodule GDATAH do
     @moduledoc false
-    def address(), do: 0x99
+    def address, do: 0x99
   end
 
   defmodule BDATAL do
     @moduledoc false
-    def address(), do: 0x9A
+    def address, do: 0x9A
   end
 
   defmodule BDATAH do
     @moduledoc false
-    def address(), do: 0x9B
+    def address, do: 0x9B
   end
 
   defmodule PDATA do
     @moduledoc false
-    def address(), do: 0x9C
+    def address, do: 0x9C
   end
 
   defmodule POFFSET_UR do
     @moduledoc false
-    def address(), do: 0x9D
+    def address, do: 0x9D
   end
 
   defmodule POFFSET_DL do
     @moduledoc false
-    def address(), do: 0x9E
+    def address, do: 0x9E
   end
 
   defmodule CONFIG3 do
     @moduledoc false
-    def address(), do: 0x9F
+    def address, do: 0x9F
   end
 
   defmodule GPENTH do
     @moduledoc false
-    def address(), do: 0xA0
+    def address, do: 0xA0
   end
 
   defmodule GEXTH do
     @moduledoc false
-    def address(), do: 0xA1
+    def address, do: 0xA1
   end
 
   defmodule GCONF1 do
     @moduledoc false
-    def address(), do: 0xA2
+    def address, do: 0xA2
 
     defstruct gesture_fifo_threshold: 0,
               gesture_exit_mask: 0,
@@ -325,7 +325,7 @@ defmodule APDS9960.Register do
 
   defmodule GCONF2 do
     @moduledoc false
-    def address(), do: 0xA3
+    def address, do: 0xA3
 
     defstruct gesture_gain: 0,
               gesture_led_drive_strength: 0,
@@ -354,27 +354,27 @@ defmodule APDS9960.Register do
 
   defmodule GOFFSET_U do
     @moduledoc false
-    def address(), do: 0xA4
+    def address, do: 0xA4
   end
 
   defmodule GOFFSET_D do
     @moduledoc false
-    def address(), do: 0xA5
+    def address, do: 0xA5
   end
 
   defmodule GOFFSET_L do
     @moduledoc false
-    def address(), do: 0xA7
+    def address, do: 0xA7
   end
 
   defmodule GOFFSET_R do
     @moduledoc false
-    def address(), do: 0xA9
+    def address, do: 0xA9
   end
 
   defmodule GPULSE do
     @moduledoc false
-    def address(), do: 0xA6
+    def address, do: 0xA6
 
     defstruct gesture_pulse_length: 0,
               gesture_pulse_count: 0
@@ -400,12 +400,12 @@ defmodule APDS9960.Register do
 
   defmodule GCONF3 do
     @moduledoc false
-    def address(), do: 0xAA
+    def address, do: 0xAA
   end
 
   defmodule GCONF4 do
     @moduledoc false
-    def address(), do: 0xAB
+    def address, do: 0xAB
 
     defstruct gesture_interrupt: 0,
               gesture_mode: 0
@@ -431,12 +431,12 @@ defmodule APDS9960.Register do
 
   defmodule GFLVL do
     @moduledoc false
-    def address(), do: 0xAE
+    def address, do: 0xAE
   end
 
   defmodule GSTATUS do
     @moduledoc false
-    def address(), do: 0xAF
+    def address, do: 0xAF
 
     defstruct gesture_fifo_overflow: 0,
               gesture_valid: 0
@@ -452,41 +452,41 @@ defmodule APDS9960.Register do
 
   defmodule IFORCE do
     @moduledoc false
-    def address(), do: 0xE4
+    def address, do: 0xE4
   end
 
   defmodule PICLEAR do
     @moduledoc false
-    def address(), do: 0xE5
+    def address, do: 0xE5
   end
 
   defmodule CICLEAR do
     @moduledoc false
-    def address(), do: 0xE6
+    def address, do: 0xE6
   end
 
   defmodule AICLEAR do
     @moduledoc false
-    def address(), do: 0xE7
+    def address, do: 0xE7
   end
 
   defmodule GFIFO_U do
     @moduledoc false
-    def address(), do: 0xFC
+    def address, do: 0xFC
   end
 
   defmodule GFIFO_D do
     @moduledoc false
-    def address(), do: 0xFD
+    def address, do: 0xFD
   end
 
   defmodule GFIFO_L do
     @moduledoc false
-    def address(), do: 0xFE
+    def address, do: 0xFE
   end
 
   defmodule GFIFO_R do
     @moduledoc false
-    def address(), do: 0xFF
+    def address, do: 0xFF
   end
 end
