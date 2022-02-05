@@ -1,7 +1,5 @@
 defmodule APDS9960.Transport do
-  @moduledoc """
-  The I2C transport to communiate with a device.
-  """
+  @moduledoc false
 
   use TypedStruct
 
@@ -24,7 +22,7 @@ defmodule APDS9960.Transport do
     }
   end
 
-  @spec new(binary(), 0..127) :: APDS9960.Transport.t()
+  @spec new(binary, 0..127) :: APDS9960.Transport.t()
   def new(bus_name, address) when is_binary(bus_name) and is_integer(address) do
     ref = open_i2c!(bus_name)
     new(ref, address)
