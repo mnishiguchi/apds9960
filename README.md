@@ -5,6 +5,7 @@
 [![CI](https://github.com/mnishiguchi/apds9960/actions/workflows/ci.yml/badge.svg)](https://github.com/mnishiguchi/apds9960/actions/workflows/ci.yml)
 
 Use the digital Color, proximity and gesture sensor `APDS9960` in Elixir.
+
 ## Installation
 
 Add apds9960 to your list of dependencies in mix.exs:
@@ -21,30 +22,47 @@ end
 
 ### Proximity detection
 
-The proximity value is a number from 0 to 255 where the higher the number the closer an object is to the sensor.
+The proximity value ranges from 0 to 255, where the higher the number the closer an object is to the sensor.
+
+**Initialize the sensor**
 
 ```elixir
-# Initialize the sensor
 sensor = APDS9960.init()
+```
 
-# To get a proximity result, first enable the proximity engine
+**Enable the proximity engine**
+
+```elixir
 APDS9960.enable(sensor, :proximity)
+```
 
-# Measure proximity
+**Measure proximity**
+
+```elixir
 APDS9960.proximity(sensor)
 ```
 
 ### RGB Color Sensing
 
+The results are 16-bit values from 0 to 65535, where 0 means the minimum amount of color and 65535 is the maximum amount of color.
+
+**Initialize the sensor**
+
 ```elixir
-# Initialize the sensor
 sensor = APDS9960.init()
+```
 
-# To get a color measurement, first enable the color engine
+**Enable the color engine**
+
+```elixir
 APDS9960.enable(sensor, :color)
+```
 
-# Retrieve the red, green, blue and clear color values as 16-bit values for each
+**Retrieve the red, green, blue and clear color values**
+
+```elixir
 APDS9960.color(sensor)
+# %{blue: 52, clear: 235, green: 73, red: 128}
 ```
 
 ### Gesture detection
