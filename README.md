@@ -12,7 +12,7 @@ Add apds9960 to your list of dependencies in mix.exs:
 ```elixir
 def deps do
   [
-    {:apds9960, "~> 0.1.0"}
+    {:apds9960, "~> 0.1"}
   ]
 end
 ```
@@ -49,7 +49,7 @@ APDS9960.color(sensor)
 
 ### Gesture detection
 
-TODO
+Coming soon
 
 
 For more information, see [API reference](https://hexdocs.pm/apds9960/api-reference.html).
