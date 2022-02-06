@@ -187,10 +187,8 @@ defmodule APDS9960 do
 
   """
   @spec gesture(t(), Enum.t()) :: gesture_direction | {:error, any}
-  def gesture(sensor, opts \\ []) do
-    sensor
-    |> APDS9960.Gesture.new()
-    |> APDS9960.Gesture.read_gesture(opts)
+  def gesture(%__MODULE__{} = sensor, opts \\ []) do
+    APDS9960.Gesture.read_gesture(sensor, opts)
   end
 
   @doc """

@@ -12,7 +12,7 @@ defmodule APDS9960.Gesture do
   typedstruct do
     @typedoc "The gesture data accumulator in the gesture processing loop."
 
-    field(:sensor, t(), enforce: true)
+    field(:sensor, APDS9960.t(), enforce: true)
     field(:up_count, non_neg_integer, default: 0)
     field(:down_count, non_neg_integer, default: 0)
     field(:left_count, non_neg_integer, default: 0)
@@ -22,15 +22,10 @@ defmodule APDS9960.Gesture do
     field(:updated_at_ms, integer)
   end
 
-  @spec new(APDS9960.t()) :: APDS9960.Gesture.t()
-  def new(sensor) do
-    %__MODULE__{sensor: sensor}
-  end
-
-  @spec read_gesture(t(), Enum.t()) :: gesture_direction | {:error, any}
-  def read_gesture(%__MODULE__{} = gesture, opts \\ []) do
+  @spec read_gesture(APDS9960.t(), Enum.t()) :: gesture_direction | {:error, any}
+  def read_gesture(%APDS9960{} = sensor, opts \\ []) do
+    gesture = %__MODULE__{sensor: sensor, started_at_ms: System.monotonic_time(:millisecond)}
     timeout = Access.get(opts, :timeout, 5000)
-    gesture = %{gesture | started_at_ms: System.monotonic_time(:millisecond)}
 
     if gesture_available?(gesture) do
       do_read_gesture(gesture, timeout)
