@@ -6,6 +6,10 @@
 
 Use `APDS9960` color, proximity and gesture sensor in Elixir.
 
+Basically we want to do something similar to what [Adafruits APDS9960 guide] does.
+
+[Adafruits APDS9960 guide]: https://learn.adafruit.com/adafruit-apds9960-breakout/circuitpython
+
 ## Installation
 
 Add apds9960 to your list of dependencies in mix.exs:
