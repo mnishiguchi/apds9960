@@ -75,7 +75,8 @@ defmodule APDS9960.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
-      format: ["format", "credo --strict"]
+      format: ["format", "credo --strict"],
+      dialyzer: ["format", "dialyzer"]
     ]
   end
 end
