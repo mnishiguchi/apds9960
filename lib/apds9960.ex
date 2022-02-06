@@ -5,8 +5,7 @@ defmodule APDS9960 do
 
   @type gesture_direction :: :up | :down | :left | :right
 
-  defdelegate init(), to: APDS9960.Sensor
-  defdelegate init(opts), to: APDS9960.Sensor
+  defdelegate init(opts \\ []), to: APDS9960.Sensor
   defdelegate enable(sensor, engine), to: APDS9960.Sensor
   defdelegate reset!(sensor), to: APDS9960.Sensor
   defdelegate set_defaults!(sensor), to: APDS9960.Sensor
