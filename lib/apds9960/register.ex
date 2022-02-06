@@ -91,8 +91,8 @@ defmodule APDS9960.Register do
     use TypedStruct
 
     typedstruct do
-      field(:low, 0 | 1, default: 0)
-      field(:high, 0 | 1, default: 0)
+      field(:low, byte, default: 0)
+      field(:high, byte, default: 0)
     end
 
     @spec data(Enum.t()) :: <<_::16>>
@@ -149,6 +149,31 @@ defmodule APDS9960.Register do
   defmodule PPULSE do
     @moduledoc false
     def address, do: 0x8E
+
+    use TypedStruct
+
+    typedstruct do
+      field(:proximity_pulse_length, 0..3, default: 1)
+      field(:proximity_pulse_count, 0..63, default: 0)
+    end
+
+    @spec data(Enum.t()) :: <<_::8>>
+    def data(opts \\ []) do
+      d = struct!(__MODULE__, opts)
+
+      b76 = d.proximity_pulse_length
+      b50 = d.proximity_pulse_count
+
+      <<b76::2, b50::6>>
+    end
+
+    @spec parse(<<_::8>>) :: t()
+    def parse(<<b76::2, b50::6>>) do
+      %__MODULE__{
+        proximity_pulse_length: b76,
+        proximity_pulse_count: b50
+      }
+    end
   end
 
   # 0x8F CONTROL Read/Write Gain control
@@ -282,22 +307,85 @@ defmodule APDS9960.Register do
     def address, do: 0x9C
   end
 
-  # 0x9D POFFSET_UR Read/Write Proximity offset for UP and RIGHT photodiodes
+  # 0x9D POFFSET_UR Read/Write Proximity offset for photodiodes
   defmodule POFFSET_UR do
     @moduledoc false
     def address, do: 0x9D
-  end
 
-  # 0x9E POFFSET_DL Read/Write Proximity offset for DOWN and LEFT photodiodes
-  defmodule POFFSET_DL do
-    @moduledoc false
-    def address, do: 0x9E
+    use TypedStruct
+
+    typedstruct do
+      field(:proximity_offset_up_right, -127..127, default: 0)
+      field(:proximity_offset_down_left, -127..127, default: 0)
+    end
+
+    @spec data(Enum.t()) :: <<_::16>>
+    def data(opts \\ []) do
+      d = struct!(__MODULE__, opts)
+
+      sign_ur = sign(d.proximity_offset_up_right)
+      bits_ur = abs(d.proximity_offset_up_right)
+      sign_dl = sign(d.proximity_offset_down_left)
+      bits_dl = abs(d.proximity_offset_down_left)
+
+      <<sign_ur::1, bits_ur::7, sign_dl::1, bits_dl::7>>
+    end
+
+    @spec parse(<<_::16>>) :: t()
+    def parse(<<data_ur, data_dl>>) do
+      %__MODULE__{
+        proximity_offset_up_right: offset_correction_factor(<<data_ur>>),
+        proximity_offset_down_left: offset_correction_factor(<<data_dl>>)
+      }
+    end
+
+    defp offset_correction_factor(<<sign::1, factor::7>>) when sign == 1, do: -factor
+    defp offset_correction_factor(<<_::1, factor::7>>), do: factor
+
+    defp sign(value) when value < 0, do: 1
+    defp sign(_), do: 0
   end
 
   # 0x9F CONFIG3 Read/Write Configuration register three
   defmodule CONFIG3 do
     @moduledoc false
     def address, do: 0x9F
+
+    use TypedStruct
+
+    typedstruct do
+      field(:proximity_gain_compensation, 0 | 1, default: 0)
+      field(:sleep_after_interrupt, 0 | 1, default: 0)
+      field(:proximity_mask, 0b0000..0b1110, default: 0)
+    end
+
+    @spec data(Enum.t()) :: <<_::8>>
+    def data(opts \\ []) do
+      d = struct!(__MODULE__, opts)
+
+      b5 = proximity_gain_compensation(d.proximity_mask)
+      b4 = d.sleep_after_interrupt
+      b30 = d.proximity_mask
+
+      <<0::2, b5::1, b4::1, b30::4>>
+    end
+
+    @spec parse(<<_::8>>) :: t()
+    def parse(<<_::2, b5::1, b4::1, b30::4>>) do
+      %__MODULE__{
+        proximity_gain_compensation: b5,
+        sleep_after_interrupt: b4,
+        proximity_mask: b30
+      }
+    end
+
+    defp proximity_gain_compensation(0b0111), do: 1
+    defp proximity_gain_compensation(0b1011), do: 1
+    defp proximity_gain_compensation(0b1101), do: 1
+    defp proximity_gain_compensation(0b1110), do: 1
+    defp proximity_gain_compensation(0b0101), do: 1
+    defp proximity_gain_compensation(0b1010), do: 1
+    defp proximity_gain_compensation(_proximity_mask), do: 0
   end
 
   # 0xA0 GPENTH Read/Write Gesture proximity enter threshold

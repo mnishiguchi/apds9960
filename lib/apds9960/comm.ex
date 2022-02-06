@@ -46,9 +46,10 @@ defmodule APDS9960.Comm do
 
   ## 0x89 PILT Read/Write Proximity interrupt low threshold
 
-  @spec get_proximity_thresholds(Transport.t()) :: {:ok, <<_::8>>}
-  def get_proximity_thresholds(%Transport{} = i2c) do
-    i2c.write_read_fn.([Register.PILT.address()], 2)
+  @spec get_proximity_threshold(Transport.t()) :: {:ok, Register.PILT.t()}
+  def get_proximity_threshold(%Transport{} = i2c) do
+    {:ok, data} = i2c.write_read_fn.([Register.PILT.address()], 2)
+    {:ok, Register.PILT.parse(data)}
   end
 
   @spec set_proximity_threshold(Transport.t(), <<_::16>> | {low :: byte, high :: byte}) :: :ok
@@ -79,6 +80,25 @@ defmodule APDS9960.Comm do
     i2c.write_fn.([Register.PERS.address(), new_data])
   end
 
+  ## 0x8E PPULSE Read/Write Proximity pulse count and length
+
+  @spec get_pulse(Transport.t()) :: {:ok, Register.PPULSE.t()}
+  def get_pulse(%Transport{} = i2c) do
+    {:ok, data} = i2c.write_read_fn.([Register.PPULSE.address()], 1)
+    {:ok, Register.PPULSE.parse(data)}
+  end
+
+  @spec set_pulse(Transport.t(), <<_::8>> | Enum.t()) :: :ok
+  def set_pulse(%Transport{} = i2c, <<byte>>) do
+    i2c.write_fn.([Register.PPULSE.address(), byte])
+  end
+
+  def set_pulse(%Transport{} = i2c, opts) do
+    {:ok, parsed_data} = get_pulse(i2c)
+    new_data = parsed_data |> Register.set_bits(opts) |> Register.data()
+    i2c.write_fn.([Register.PPULSE.address(), new_data])
+  end
+
   ## 0x8F CONTROL Read/Write Gain control
 
   @spec get_control(Transport.t()) :: {:ok, Register.CONTROL.t()}
@@ -98,6 +118,25 @@ defmodule APDS9960.Comm do
     i2c.write_fn.([Register.CONTROL.address(), new_data])
   end
 
+  ## 0x90 CONFIG2 Read/Write Configuration register two
+
+  @spec get_config2(Transport.t()) :: {:ok, Register.CONFIG2.t()}
+  def get_config2(%Transport{} = i2c) do
+    {:ok, data} = i2c.write_read_fn.([Register.CONFIG2.address()], 1)
+    {:ok, Register.CONFIG2.parse(data)}
+  end
+
+  @spec set_config2(Transport.t(), <<_::8>> | Enum.t()) :: :ok
+  def set_config2(%Transport{} = i2c, <<byte>>) do
+    i2c.write_fn.([Register.CONFIG2.address(), byte])
+  end
+
+  def set_config2(%Transport{} = i2c, opts) do
+    {:ok, parsed_data} = get_config2(i2c)
+    new_data = parsed_data |> Register.set_bits(opts) |> Register.data()
+    i2c.write_fn.([Register.CONFIG2.address(), new_data])
+  end
+
   ## 0x93 STATUS Read-only Device status
 
   @spec status(Transport.t()) :: {:ok, Register.STATUS.t()}
@@ -106,7 +145,7 @@ defmodule APDS9960.Comm do
     {:ok, Register.STATUS.parse(data)}
   end
 
-  ## 0x94 CDATAL Read-only Color data (2 bytes
+  ## 0x94 CDATAL Read-only Color data (2 bytes)
 
   @spec color_data(Transport.t()) :: {:ok, Register.CDATAL.t()}
   def color_data(%Transport{} = i2c) do
@@ -119,6 +158,44 @@ defmodule APDS9960.Comm do
   @spec proximity_data(Transport.t()) :: {:ok, <<_::8>>}
   def proximity_data(%Transport{} = i2c) do
     i2c.write_read_fn.([Register.PDATA.address()], 1)
+  end
+
+  ## 0x9D POFFSET_UR Read/Write Proximity offset for photodiodes (2 bytes)
+
+  @spec get_proximity_offset(Transport.t()) :: {:ok, Register.POFFSET_UR.t()}
+  def get_proximity_offset(%Transport{} = i2c) do
+    {:ok, <<_::16>> = data} = i2c.write_read_fn.([Register.POFFSET_UR.address()], 2)
+    {:ok, Register.POFFSET_UR.parse(data)}
+  end
+
+  @spec set_proximity_offset(Transport.t(), <<_::16>> | Enum.t()) :: :ok
+  def set_proximity_offset(%Transport{} = i2c, <<_::16>> = data) do
+    i2c.write_fn.([Register.POFFSET_UR.address(), data])
+  end
+
+  def set_proximity_offset(%Transport{} = i2c, opts) do
+    {:ok, parsed_data} = get_proximity_offset(i2c)
+    new_data = parsed_data |> Register.set_bits(opts) |> Register.data()
+    i2c.write_fn.([Register.POFFSET_UR.address(), new_data])
+  end
+
+  ## 0x9F CONFIG3 Read/Write Configuration register three
+
+  @spec get_config3(Transport.t()) :: {:ok, Register.CONFIG3.t()}
+  def get_config3(%Transport{} = i2c) do
+    {:ok, data} = i2c.write_read_fn.([Register.CONFIG3.address()], 1)
+    {:ok, Register.CONFIG3.parse(data)}
+  end
+
+  @spec set_config3(Transport.t(), <<_::8>> | Enum.t()) :: :ok
+  def set_config3(%Transport{} = i2c, <<byte>>) do
+    i2c.write_fn.([Register.CONFIG3.address(), byte])
+  end
+
+  def set_config3(%Transport{} = i2c, opts) do
+    {:ok, parsed_data} = get_config3(i2c)
+    new_data = parsed_data |> Register.set_bits(opts) |> Register.data()
+    i2c.write_fn.([Register.CONFIG3.address(), new_data])
   end
 
   ## 0xA0 GPENTH Read/Write Gesture proximity enter threshold
@@ -224,6 +301,20 @@ defmodule APDS9960.Comm do
   def gesture_status(%Transport{} = i2c) do
     {:ok, data} = i2c.write_read_fn.([Register.GSTATUS.address()], 1)
     {:ok, Register.GSTATUS.parse(data)}
+  end
+
+  ## 0xE5 PICLEAR W Proximity interrupt clear
+
+  @spec clear_proximity_interrupt(Transport.t()) :: :ok
+  def clear_proximity_interrupt(%Transport{} = i2c) do
+    i2c.write_fn.([Register.PICLEAR.address()])
+  end
+
+  ## 0xE6 CICLEAR W ALS clear channel interrupt clear
+
+  @spec clear_als_clear_channel_interrupt(Transport.t()) :: :ok
+  def clear_als_clear_channel_interrupt(%Transport{} = i2c) do
+    i2c.write_fn.([Register.PICLEAR.address()])
   end
 
   ## 0xE7 AICLEAR Write-only All non-gesture interrupts clear
