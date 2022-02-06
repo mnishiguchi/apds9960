@@ -156,9 +156,8 @@ defmodule APDS9960 do
 
   """
   @spec proximity(t()) :: byte
-  def proximity(%__MODULE__{transport: i2c}) do
-    {:ok, <<byte>>} = Comm.proximity_data(i2c)
-    byte
+  def proximity(%__MODULE__{} = sensor, opts \\ []) do
+    APDS9960.Proximity.read_proximity(sensor, opts)
   end
 
   @doc """
