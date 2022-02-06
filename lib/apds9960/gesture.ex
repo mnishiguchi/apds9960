@@ -1,7 +1,7 @@
 defmodule APDS9960.Gesture do
   @moduledoc false
 
-  alias APDS9960.Comm
+  alias APDS9960.{Comm, Sensor, Transport}
 
   use TypedStruct
 
@@ -12,7 +12,7 @@ defmodule APDS9960.Gesture do
   typedstruct do
     @typedoc "The gesture data accumulator in the gesture processing loop."
 
-    field(:sensor, APDS9960.t(), enforce: true)
+    field(:sensor, Sensor.t(), enforce: true)
     field(:up_count, non_neg_integer, default: 0)
     field(:down_count, non_neg_integer, default: 0)
     field(:left_count, non_neg_integer, default: 0)
@@ -22,8 +22,8 @@ defmodule APDS9960.Gesture do
     field(:updated_at_ms, integer)
   end
 
-  @spec read_gesture(APDS9960.t(), Enum.t()) :: gesture_direction | {:error, any}
-  def read_gesture(%APDS9960{} = sensor, opts \\ []) do
+  @spec read_gesture(Sensor.t(), Enum.t()) :: gesture_direction | {:error, any}
+  def read_gesture(%Sensor{} = sensor, opts \\ []) do
     gesture = %__MODULE__{sensor: sensor, started_at_ms: System.monotonic_time(:millisecond)}
     timeout = Access.get(opts, :timeout, 5000)
 

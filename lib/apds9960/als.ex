@@ -1,11 +1,16 @@
 defmodule APDS9960.ALS do
   @moduledoc false
 
-  alias APDS9960.Comm
+  alias APDS9960.{Comm, Sensor}
 
-  @spec read_proximity(APDS9960.t(), Enum.t()) :: byte
-  def read_proximity(%APDS9960{} = sensor, _opts \\ []) do
-    {:ok, <<byte>>} = Comm.proximity_data(sensor.transport)
-    byte
+  @spec read_color(Sensor.t(), Enum.t()) :: %{
+          red: 0..0xFFFF,
+          green: 0..0xFFFF,
+          blue: 0..0xFFFF,
+          clear: 0..0xFFFF
+        }
+  def read_color(%Sensor{} = sensor, _opts \\ []) do
+    {:ok, struct} = Comm.color_data(sensor.transport)
+    Map.from_struct(struct)
   end
 end
