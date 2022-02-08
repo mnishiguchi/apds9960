@@ -28,7 +28,7 @@ defmodule APDS9960.Comm do
 
   def set_enable(%Transport{} = i2c, opts) do
     {:ok, parsed_data} = get_enable(i2c)
-    new_data = parsed_data |> Register.set_bits(opts) |> Register.data()
+    new_data = parsed_data |> Register.set_bits(opts) |> Register.to_binary()
     i2c.write_fn.([Register.ENABLE.address(), new_data])
   end
 
@@ -76,7 +76,7 @@ defmodule APDS9960.Comm do
 
   def set_interrupt_persistence(%Transport{} = i2c, opts) do
     {:ok, parsed_data} = get_interrupt_persistence(i2c)
-    new_data = parsed_data |> Register.set_bits(opts) |> Register.data()
+    new_data = parsed_data |> Register.set_bits(opts) |> Register.to_binary()
     i2c.write_fn.([Register.PERS.address(), new_data])
   end
 
@@ -95,7 +95,7 @@ defmodule APDS9960.Comm do
 
   def set_pulse(%Transport{} = i2c, opts) do
     {:ok, parsed_data} = get_pulse(i2c)
-    new_data = parsed_data |> Register.set_bits(opts) |> Register.data()
+    new_data = parsed_data |> Register.set_bits(opts) |> Register.to_binary()
     i2c.write_fn.([Register.PPULSE.address(), new_data])
   end
 
@@ -114,7 +114,7 @@ defmodule APDS9960.Comm do
 
   def set_control(%Transport{} = i2c, opts) do
     {:ok, parsed_data} = get_control(i2c)
-    new_data = parsed_data |> Register.set_bits(opts) |> Register.data()
+    new_data = parsed_data |> Register.set_bits(opts) |> Register.to_binary()
     i2c.write_fn.([Register.CONTROL.address(), new_data])
   end
 
@@ -133,7 +133,7 @@ defmodule APDS9960.Comm do
 
   def set_config2(%Transport{} = i2c, opts) do
     {:ok, parsed_data} = get_config2(i2c)
-    new_data = parsed_data |> Register.set_bits(opts) |> Register.data()
+    new_data = parsed_data |> Register.set_bits(opts) |> Register.to_binary()
     i2c.write_fn.([Register.CONFIG2.address(), new_data])
   end
 
@@ -175,7 +175,7 @@ defmodule APDS9960.Comm do
 
   def set_proximity_offset(%Transport{} = i2c, opts) do
     {:ok, parsed_data} = get_proximity_offset(i2c)
-    new_data = parsed_data |> Register.set_bits(opts) |> Register.data()
+    new_data = parsed_data |> Register.set_bits(opts) |> Register.to_binary()
     i2c.write_fn.([Register.POFFSET_UR.address(), new_data])
   end
 
@@ -194,7 +194,7 @@ defmodule APDS9960.Comm do
 
   def set_config3(%Transport{} = i2c, opts) do
     {:ok, parsed_data} = get_config3(i2c)
-    new_data = parsed_data |> Register.set_bits(opts) |> Register.data()
+    new_data = parsed_data |> Register.set_bits(opts) |> Register.to_binary()
     i2c.write_fn.([Register.CONFIG3.address(), new_data])
   end
 
@@ -227,7 +227,7 @@ defmodule APDS9960.Comm do
 
   def set_gesture_conf1(%Transport{} = i2c, opts) do
     {:ok, parsed_data} = get_gesture_conf1(i2c)
-    new_data = parsed_data |> Register.set_bits(opts) |> Register.data()
+    new_data = parsed_data |> Register.set_bits(opts) |> Register.to_binary()
     i2c.write_fn.([Register.GCONF1.address(), new_data])
   end
 
@@ -246,7 +246,7 @@ defmodule APDS9960.Comm do
 
   def set_gesture_conf2(%Transport{} = i2c, opts) do
     {:ok, parsed_data} = get_gesture_conf2(i2c)
-    new_data = parsed_data |> Register.set_bits(opts) |> Register.data()
+    new_data = parsed_data |> Register.set_bits(opts) |> Register.to_binary()
     i2c.write_fn.([Register.GCONF2.address(), new_data])
   end
 
@@ -265,7 +265,7 @@ defmodule APDS9960.Comm do
 
   def set_gesture_pulse_count(%Transport{} = i2c, opts) do
     {:ok, parsed_data} = get_gesture_pulse_count(i2c)
-    new_data = parsed_data |> Register.set_bits(opts) |> Register.data()
+    new_data = parsed_data |> Register.set_bits(opts) |> Register.to_binary()
     i2c.write_fn.([Register.GPULSE.address(), new_data])
   end
 
@@ -284,7 +284,7 @@ defmodule APDS9960.Comm do
 
   def set_gesture_conf4(%Transport{} = i2c, opts) do
     {:ok, parsed_data} = get_gesture_conf4(i2c)
-    new_data = parsed_data |> Register.set_bits(opts) |> Register.data()
+    new_data = parsed_data |> Register.set_bits(opts) |> Register.to_binary()
     i2c.write_fn.([Register.GCONF4.address(), new_data])
   end
 
