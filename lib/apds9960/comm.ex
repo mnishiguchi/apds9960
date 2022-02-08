@@ -44,6 +44,31 @@ defmodule APDS9960.Comm do
     i2c.write_fn.([Register.ATIME.address(), byte])
   end
 
+  ## 0x83 WTIME Read/Write Wait time (non-gesture)
+
+  @spec get_wait_time(Transport.t()) :: {:ok, <<_::8>>}
+  def get_wait_time(%Transport{} = i2c) do
+    i2c.write_read_fn.([Register.WTIME.address()], 1)
+  end
+
+  @spec set_wait_time(Transport.t(), <<_::8>>) :: :ok
+  def set_wait_time(%Transport{} = i2c, <<byte>>) do
+    i2c.write_fn.([Register.WTIME.address(), byte])
+  end
+
+  ## 0x84 AILTL Read/Write ALS interrupt low/high threshold
+
+  @spec get_als_threshold(Transport.t()) :: {:ok, Register.AILTL.t()}
+  def get_als_threshold(%Transport{} = i2c) do
+    {:ok, <<_::32>> = data} = i2c.write_read_fn.([Register.AILTL.address()], 4)
+    {:ok, Register.AILTL.parse(data)}
+  end
+
+  @spec set_als_threshold(Transport.t(), {low :: 0..0xFFFF, high :: 0..0xFFFF}) :: :ok
+  def set_als_threshold(%Transport{} = i2c, {low, high}) do
+    i2c.write_fn.([Register.AILTL.address(), <<low::little-16, high::little-16>>])
+  end
+
   ## 0x89 PILT Read/Write Proximity interrupt low threshold
 
   @spec get_proximity_threshold(Transport.t()) :: {:ok, Register.PILT.t()}
@@ -71,7 +96,7 @@ defmodule APDS9960.Comm do
 
   @spec set_interrupt_persistence(Transport.t(), <<_::8>> | Enum.t()) :: :ok
   def set_interrupt_persistence(%Transport{} = i2c, <<byte>>) do
-    i2c.write_fn.([Register.PERS.address(), byte])
+    i2c.write_fn.([Register.PERS.address(), <<byte>>])
   end
 
   def set_interrupt_persistence(%Transport{} = i2c, opts) do
@@ -80,21 +105,40 @@ defmodule APDS9960.Comm do
     i2c.write_fn.([Register.PERS.address(), new_data])
   end
 
+  ## 0x8D CONFIG1 Read/Write Configuration register one
+
+  @spec get_config1(Transport.t()) :: {:ok, Register.CONFIG1.t()}
+  def get_config1(%Transport{} = i2c) do
+    {:ok, data} = i2c.write_read_fn.([Register.CONFIG1.address()], 1)
+    {:ok, Register.CONFIG1.parse(data)}
+  end
+
+  @spec set_config1(Transport.t(), <<_::8>> | Enum.t()) :: :ok
+  def set_config1(%Transport{} = i2c, <<byte>>) do
+    i2c.write_fn.([Register.CONFIG1.address(), <<byte>>])
+  end
+
+  def set_config1(%Transport{} = i2c, opts) do
+    {:ok, parsed_data} = get_config1(i2c)
+    new_data = parsed_data |> Register.set_bits(opts) |> Register.to_binary()
+    i2c.write_fn.([Register.CONFIG1.address(), new_data])
+  end
+
   ## 0x8E PPULSE Read/Write Proximity pulse count and length
 
-  @spec get_pulse(Transport.t()) :: {:ok, Register.PPULSE.t()}
-  def get_pulse(%Transport{} = i2c) do
+  @spec get_proximity_pulse(Transport.t()) :: {:ok, Register.PPULSE.t()}
+  def get_proximity_pulse(%Transport{} = i2c) do
     {:ok, data} = i2c.write_read_fn.([Register.PPULSE.address()], 1)
     {:ok, Register.PPULSE.parse(data)}
   end
 
-  @spec set_pulse(Transport.t(), <<_::8>> | Enum.t()) :: :ok
-  def set_pulse(%Transport{} = i2c, <<byte>>) do
-    i2c.write_fn.([Register.PPULSE.address(), byte])
+  @spec set_proximity_pulse(Transport.t(), <<_::8>> | Enum.t()) :: :ok
+  def set_proximity_pulse(%Transport{} = i2c, <<byte>>) do
+    i2c.write_fn.([Register.PPULSE.address(), <<byte>>])
   end
 
-  def set_pulse(%Transport{} = i2c, opts) do
-    {:ok, parsed_data} = get_pulse(i2c)
+  def set_proximity_pulse(%Transport{} = i2c, opts) do
+    {:ok, parsed_data} = get_proximity_pulse(i2c)
     new_data = parsed_data |> Register.set_bits(opts) |> Register.to_binary()
     i2c.write_fn.([Register.PPULSE.address(), new_data])
   end
@@ -109,7 +153,7 @@ defmodule APDS9960.Comm do
 
   @spec set_control(Transport.t(), <<_::8>> | Enum.t()) :: :ok
   def set_control(%Transport{} = i2c, <<byte>>) do
-    i2c.write_fn.([Register.CONTROL.address(), byte])
+    i2c.write_fn.([Register.CONTROL.address(), <<byte>>])
   end
 
   def set_control(%Transport{} = i2c, opts) do
@@ -128,7 +172,7 @@ defmodule APDS9960.Comm do
 
   @spec set_config2(Transport.t(), <<_::8>> | Enum.t()) :: :ok
   def set_config2(%Transport{} = i2c, <<byte>>) do
-    i2c.write_fn.([Register.CONFIG2.address(), byte])
+    i2c.write_fn.([Register.CONFIG2.address(), <<byte>>])
   end
 
   def set_config2(%Transport{} = i2c, opts) do
@@ -189,7 +233,7 @@ defmodule APDS9960.Comm do
 
   @spec set_config3(Transport.t(), <<_::8>> | Enum.t()) :: :ok
   def set_config3(%Transport{} = i2c, <<byte>>) do
-    i2c.write_fn.([Register.CONFIG3.address(), byte])
+    i2c.write_fn.([Register.CONFIG3.address(), <<byte>>])
   end
 
   def set_config3(%Transport{} = i2c, opts) do
@@ -202,14 +246,14 @@ defmodule APDS9960.Comm do
 
   @spec set_gesture_proximity_enter_threshold(Transport.t(), <<_::8>>) :: :ok
   def set_gesture_proximity_enter_threshold(%Transport{} = i2c, <<byte>>) do
-    i2c.write_fn.([Register.GPENTH.address(), byte])
+    i2c.write_fn.([Register.GPENTH.address(), <<byte>>])
   end
 
   ## 0xA1 GEXTH R/W Gesture exit threshold
 
   @spec set_gesture_exit_threshold(Transport.t(), <<_::8>>) :: :ok
   def set_gesture_exit_threshold(%Transport{} = i2c, <<byte>>) do
-    i2c.write_fn.([Register.GEXTH.address(), byte])
+    i2c.write_fn.([Register.GEXTH.address(), <<byte>>])
   end
 
   ## 0xA2 GCONF1 Read/Write Gesture configuration one
@@ -222,7 +266,7 @@ defmodule APDS9960.Comm do
 
   @spec set_gesture_conf1(Transport.t(), <<_::8>> | Enum.t()) :: :ok
   def set_gesture_conf1(%Transport{} = i2c, <<byte>>) do
-    i2c.write_fn.([Register.GCONF1.address(), byte])
+    i2c.write_fn.([Register.GCONF1.address(), <<byte>>])
   end
 
   def set_gesture_conf1(%Transport{} = i2c, opts) do
@@ -241,7 +285,7 @@ defmodule APDS9960.Comm do
 
   @spec set_gesture_conf2(Transport.t(), <<_::8>> | Enum.t()) :: :ok
   def set_gesture_conf2(%Transport{} = i2c, <<byte>>) do
-    i2c.write_fn.([Register.GCONF2.address(), byte])
+    i2c.write_fn.([Register.GCONF2.address(), <<byte>>])
   end
 
   def set_gesture_conf2(%Transport{} = i2c, opts) do
@@ -260,7 +304,7 @@ defmodule APDS9960.Comm do
 
   @spec set_gesture_pulse_count(Transport.t(), <<_::8>> | Enum.t()) :: :ok
   def set_gesture_pulse_count(%Transport{} = i2c, <<byte>>) do
-    i2c.write_fn.([Register.GPULSE.address(), byte])
+    i2c.write_fn.([Register.GPULSE.address(), <<byte>>])
   end
 
   def set_gesture_pulse_count(%Transport{} = i2c, opts) do
@@ -279,7 +323,7 @@ defmodule APDS9960.Comm do
 
   @spec set_gesture_conf4(Transport.t(), <<_::8>> | Enum.t()) :: :ok
   def set_gesture_conf4(%Transport{} = i2c, <<byte>>) do
-    i2c.write_fn.([Register.GCONF4.address(), byte])
+    i2c.write_fn.([Register.GCONF4.address(), <<byte>>])
   end
 
   def set_gesture_conf4(%Transport{} = i2c, opts) do
