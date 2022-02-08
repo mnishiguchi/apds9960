@@ -12,11 +12,11 @@ defmodule APDS9960.Register do
   @doc """
   Converts a register value struct to binary.
   """
-  @spec data(struct) :: binary
-  def data(parsed_data) when is_struct(parsed_data) do
+  @spec to_binary(struct) :: binary
+  def to_binary(parsed_data) when is_struct(parsed_data) do
     parsed_data
     |> Map.from_struct()
-    |> parsed_data.__struct__.data()
+    |> parsed_data.__struct__.to_binary()
   end
 
   # 0x80 ENABLE Read/Write Enable states and interrupts 0x00
@@ -36,8 +36,8 @@ defmodule APDS9960.Register do
       field(:power, 0 | 1, default: 0)
     end
 
-    @spec data(Enum.t()) :: <<_::8>>
-    def data(opts \\ []) do
+    @spec to_binary(Enum.t()) :: <<_::8>>
+    def to_binary(opts \\ []) do
       d = struct!(__MODULE__, opts)
 
       b6 = d.gesture
@@ -95,8 +95,8 @@ defmodule APDS9960.Register do
       field(:high, byte, default: 0)
     end
 
-    @spec data(Enum.t()) :: <<_::16>>
-    def data(opts \\ []) do
+    @spec to_binary(Enum.t()) :: <<_::16>>
+    def to_binary(opts \\ []) do
       d = struct!(__MODULE__, opts)
 
       <<d.low, d.high>>
@@ -120,8 +120,8 @@ defmodule APDS9960.Register do
       field(:als, 0..15, default: 0)
     end
 
-    @spec data(Enum.t()) :: <<_::8>>
-    def data(opts \\ []) do
+    @spec to_binary(Enum.t()) :: <<_::8>>
+    def to_binary(opts \\ []) do
       d = struct!(__MODULE__, opts)
 
       b74 = d.proximity
@@ -157,8 +157,8 @@ defmodule APDS9960.Register do
       field(:proximity_pulse_count, 0..63, default: 0)
     end
 
-    @spec data(Enum.t()) :: <<_::8>>
-    def data(opts \\ []) do
+    @spec to_binary(Enum.t()) :: <<_::8>>
+    def to_binary(opts \\ []) do
       d = struct!(__MODULE__, opts)
 
       b76 = d.proximity_pulse_length
@@ -189,8 +189,8 @@ defmodule APDS9960.Register do
       field(:als_and_color_gain, 0..3, default: 0)
     end
 
-    @spec data(Enum.t()) :: <<_::8>>
-    def data(opts \\ []) do
+    @spec to_binary(Enum.t()) :: <<_::8>>
+    def to_binary(opts \\ []) do
       d = struct!(__MODULE__, opts)
 
       b76 = d.led_drive_strength
@@ -223,8 +223,8 @@ defmodule APDS9960.Register do
       field(:led_boost, 0..3, default: 0)
     end
 
-    @spec data(Enum.t()) :: <<_::8>>
-    def data(opts \\ []) do
+    @spec to_binary(Enum.t()) :: <<_::8>>
+    def to_binary(opts \\ []) do
       d = struct!(__MODULE__, opts)
 
       b7 = d.proximity_saturation_interrupt
@@ -319,8 +319,8 @@ defmodule APDS9960.Register do
       field(:proximity_offset_down_left, -127..127, default: 0)
     end
 
-    @spec data(Enum.t()) :: <<_::16>>
-    def data(opts \\ []) do
+    @spec to_binary(Enum.t()) :: <<_::16>>
+    def to_binary(opts \\ []) do
       d = struct!(__MODULE__, opts)
 
       sign_ur = sign(d.proximity_offset_up_right)
@@ -359,8 +359,8 @@ defmodule APDS9960.Register do
       field(:proximity_mask, 0b0000..0b1110, default: 0)
     end
 
-    @spec data(Enum.t()) :: <<_::8>>
-    def data(opts \\ []) do
+    @spec to_binary(Enum.t()) :: <<_::8>>
+    def to_binary(opts \\ []) do
       d = struct!(__MODULE__, opts)
 
       b5 = proximity_gain_compensation(d.proximity_mask)
@@ -413,8 +413,8 @@ defmodule APDS9960.Register do
       field(:gesture_exit_persistence, 0..3, default: 0)
     end
 
-    @spec data(Enum.t()) :: <<_::8>>
-    def data(opts \\ []) do
+    @spec to_binary(Enum.t()) :: <<_::8>>
+    def to_binary(opts \\ []) do
       d = struct!(__MODULE__, opts)
 
       b76 = d.gesture_fifo_threshold
@@ -447,8 +447,8 @@ defmodule APDS9960.Register do
       field(:gesture_wait_time, 0..7, default: 0)
     end
 
-    @spec data(Enum.t()) :: <<_::8>>
-    def data(opts \\ []) do
+    @spec to_binary(Enum.t()) :: <<_::8>>
+    def to_binary(opts \\ []) do
       d = struct!(__MODULE__, opts)
 
       b65 = d.gesture_gain
@@ -505,8 +505,8 @@ defmodule APDS9960.Register do
       field(:gesture_pulse_count, 0..63, default: 0)
     end
 
-    @spec data(Enum.t()) :: <<_::8>>
-    def data(opts \\ []) do
+    @spec to_binary(Enum.t()) :: <<_::8>>
+    def to_binary(opts \\ []) do
       d = struct!(__MODULE__, opts)
 
       b76 = d.gesture_pulse_length
@@ -542,8 +542,8 @@ defmodule APDS9960.Register do
       field(:gesture_mode, 0 | 1, default: 0)
     end
 
-    @spec data(Enum.t()) :: <<_::8>>
-    def data(opts \\ []) do
+    @spec to_binary(Enum.t()) :: <<_::8>>
+    def to_binary(opts \\ []) do
       d = struct!(__MODULE__, opts)
 
       b1 = d.gesture_interrupt
