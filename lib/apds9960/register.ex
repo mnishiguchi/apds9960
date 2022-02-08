@@ -19,7 +19,16 @@ defmodule APDS9960.Register do
     |> parsed_data.__struct__.to_binary()
   end
 
-  # 0x80 ENABLE Read/Write Enable states and interrupts 0x00
+  defmodule Utils do
+    @moduledoc false
+    def offset_correction_factor(<<sign::1, factor::7>>) when sign == 1, do: -factor
+    def offset_correction_factor(<<_::1, factor::7>>), do: factor
+
+    def sign(value) when value < 0, do: 1
+    def sign(_), do: 0
+  end
+
+  # 0x80 ENABLE Read/Write Enable states and interrupts
   defmodule ENABLE do
     @moduledoc false
     def address, do: 0x80
@@ -194,16 +203,16 @@ defmodule APDS9960.Register do
     use TypedStruct
 
     typedstruct do
-      field(:proximity_pulse_length, 0..3, default: 1)
-      field(:proximity_pulse_count, 0..63, default: 0)
+      field(:pulse_length, 0..3, default: 1)
+      field(:pulse_count, 0..63, default: 0)
     end
 
     @spec to_binary(Enum.t()) :: <<_::8>>
     def to_binary(opts \\ []) do
       d = struct!(__MODULE__, opts)
 
-      b76 = d.proximity_pulse_length
-      b50 = d.proximity_pulse_count
+      b76 = d.pulse_length
+      b50 = d.pulse_count
 
       <<b76::2, b50::6>>
     end
@@ -211,8 +220,8 @@ defmodule APDS9960.Register do
     @spec parse(<<_::8>>) :: t()
     def parse(<<b76::2, b50::6>>) do
       %__MODULE__{
-        proximity_pulse_length: b76,
-        proximity_pulse_count: b50
+        pulse_length: b76,
+        pulse_count: b50
       }
     end
   end
@@ -353,21 +362,22 @@ defmodule APDS9960.Register do
     @moduledoc false
     def address, do: 0x9D
 
+    import APDS9960.Register.Utils
     use TypedStruct
 
     typedstruct do
-      field(:proximity_offset_up_right, -127..127, default: 0)
-      field(:proximity_offset_down_left, -127..127, default: 0)
+      field(:up_right, -127..127, default: 0)
+      field(:down_left, -127..127, default: 0)
     end
 
     @spec to_binary(Enum.t()) :: <<_::16>>
     def to_binary(opts \\ []) do
       d = struct!(__MODULE__, opts)
 
-      sign_ur = sign(d.proximity_offset_up_right)
-      bits_ur = abs(d.proximity_offset_up_right)
-      sign_dl = sign(d.proximity_offset_down_left)
-      bits_dl = abs(d.proximity_offset_down_left)
+      sign_ur = sign(d.up_right)
+      bits_ur = abs(d.up_right)
+      sign_dl = sign(d.down_left)
+      bits_dl = abs(d.down_left)
 
       <<sign_ur::1, bits_ur::7, sign_dl::1, bits_dl::7>>
     end
@@ -375,16 +385,10 @@ defmodule APDS9960.Register do
     @spec parse(<<_::16>>) :: t()
     def parse(<<data_ur, data_dl>>) do
       %__MODULE__{
-        proximity_offset_up_right: offset_correction_factor(<<data_ur>>),
-        proximity_offset_down_left: offset_correction_factor(<<data_dl>>)
+        up_right: offset_correction_factor(<<data_ur>>),
+        down_left: offset_correction_factor(<<data_dl>>)
       }
     end
-
-    defp offset_correction_factor(<<sign::1, factor::7>>) when sign == 1, do: -factor
-    defp offset_correction_factor(<<_::1, factor::7>>), do: factor
-
-    defp sign(value) when value < 0, do: 1
-    defp sign(_), do: 0
   end
 
   # 0x9F CONFIG3 Read/Write Configuration register three
@@ -429,16 +433,29 @@ defmodule APDS9960.Register do
     defp proximity_gain_compensation(_proximity_mask), do: 0
   end
 
-  # 0xA0 GPENTH Read/Write Gesture proximity enter threshold
+  # 0xA0 GPENTH Read/Write Gesture proximity enter/exit threshold
   defmodule GPENTH do
     @moduledoc false
     def address, do: 0xA0
-  end
 
-  # 0xA1 GEXTH Read/Write Gesture exit threshold
-  defmodule GEXTH do
-    @moduledoc false
-    def address, do: 0xA1
+    use TypedStruct
+
+    typedstruct do
+      field(:enter, byte, default: 0)
+      field(:exit, byte, default: 0)
+    end
+
+    @spec to_binary(Enum.t()) :: <<_::16>>
+    def to_binary(opts \\ []) do
+      d = struct!(__MODULE__, opts)
+
+      <<d.enter, d.exit>>
+    end
+
+    @spec parse(<<_::16>>) :: t()
+    def parse(<<enter_byte, exit_byte>>) do
+      %__MODULE__{enter: enter_byte, exit: exit_byte}
+    end
   end
 
   # 0xA2 GCONF1 Read/Write Gesture configuration one
@@ -449,18 +466,18 @@ defmodule APDS9960.Register do
     use TypedStruct
 
     typedstruct do
-      field(:gesture_fifo_threshold, 0..3, default: 0)
-      field(:gesture_exit_mask, 0x0000..0x1111, default: 0)
-      field(:gesture_exit_persistence, 0..3, default: 0)
+      field(:fifo_threshold, 0..3, default: 0)
+      field(:exit_mask, 0x0000..0x1111, default: 0)
+      field(:exit_persistence, 0..3, default: 0)
     end
 
     @spec to_binary(Enum.t()) :: <<_::8>>
     def to_binary(opts \\ []) do
       d = struct!(__MODULE__, opts)
 
-      b76 = d.gesture_fifo_threshold
-      b52 = d.gesture_exit_mask
-      b10 = d.gesture_exit_persistence
+      b76 = d.fifo_threshold
+      b52 = d.exit_mask
+      b10 = d.exit_persistence
 
       <<b76::2, b52::4, b10::2>>
     end
@@ -468,9 +485,9 @@ defmodule APDS9960.Register do
     @spec parse(<<_::8>>) :: t()
     def parse(<<b76::2, b52::4, b10::2>>) do
       %__MODULE__{
-        gesture_fifo_threshold: b76,
-        gesture_exit_mask: b52,
-        gesture_exit_persistence: b10
+        fifo_threshold: b76,
+        exit_mask: b52,
+        exit_persistence: b10
       }
     end
   end
@@ -483,18 +500,18 @@ defmodule APDS9960.Register do
     use TypedStruct
 
     typedstruct do
-      field(:gesture_gain, 0..3, default: 0)
-      field(:gesture_led_drive_strength, 0..3, default: 0)
-      field(:gesture_wait_time, 0..7, default: 0)
+      field(:gain, 0..3, default: 0)
+      field(:led_drive_strength, 0..3, default: 0)
+      field(:wait_time, 0..7, default: 0)
     end
 
     @spec to_binary(Enum.t()) :: <<_::8>>
     def to_binary(opts \\ []) do
       d = struct!(__MODULE__, opts)
 
-      b65 = d.gesture_gain
-      b43 = d.gesture_led_drive_strength
-      b20 = d.gesture_wait_time
+      b65 = d.gain
+      b43 = d.led_drive_strength
+      b20 = d.wait_time
 
       <<0::1, b65::2, b43::2, b20::3>>
     end
@@ -502,36 +519,83 @@ defmodule APDS9960.Register do
     @spec parse(<<_::8>>) :: t()
     def parse(<<0::1, b65::2, b43::2, b20::3>>) do
       %__MODULE__{
-        gesture_gain: b65,
-        gesture_led_drive_strength: b43,
-        gesture_wait_time: b20
+        gain: b65,
+        led_drive_strength: b43,
+        wait_time: b20
       }
     end
   end
 
-  # 0xA4 GOFFSET_U Read/Write Gesture UP offset register
+  ## 0xA4 GOFFSET_U Read/Write Gesture UP offset register
   defmodule GOFFSET_U do
     @moduledoc false
     def address, do: 0xA4
+
+    import APDS9960.Register.Utils
+
+    @spec to_binary(-127..127) :: <<_::8>>
+    def to_binary(value) when is_number(value) do
+      <<sign(value)::1, abs(value)::7>>
+    end
+
+    @spec parse(<<_::8>>) :: -127..127
+    def parse(<<byte>>) do
+      offset_correction_factor(<<byte>>)
+    end
   end
 
-  # 0xA5 GOFFSET_D Read/Write Gesture DOWN offset register
+  ## 0xA5 GOFFSET_D Read/Write Gesture DOWN offset register
   defmodule GOFFSET_D do
     @moduledoc false
     def address, do: 0xA5
+
+    import APDS9960.Register.Utils
+
+    @spec to_binary(-127..127) :: <<_::8>>
+    def to_binary(value) when is_number(value) do
+      <<sign(value)::1, abs(value)::7>>
+    end
+
+    @spec parse(<<_::8>>) :: -127..127
+    def parse(<<byte>>) do
+      offset_correction_factor(<<byte>>)
+    end
   end
 
-  # 0xA7 GOFFSET_L Read/Write Gesture LEFT offset register
+  ## 0xA7 GOFFSET_L Read/Write Gesture LEFT offset register
   defmodule GOFFSET_L do
     @moduledoc false
     def address, do: 0xA7
+
+    import APDS9960.Register.Utils
+
+    @spec to_binary(-127..127) :: <<_::8>>
+    def to_binary(value) when is_number(value) do
+      <<sign(value)::1, abs(value)::7>>
+    end
+
+    @spec parse(<<_::8>>) :: -127..127
+    def parse(<<byte>>) do
+      offset_correction_factor(<<byte>>)
+    end
   end
 
-  # 0xA9 GOFFSET_R Read/Write Gesture RIGHT offset register
+  ## 0xA9 GOFFSET_R Read/Write Gesture RIGHT offset register
   defmodule GOFFSET_R do
     @moduledoc false
-    @spec address :: 169
     def address, do: 0xA9
+
+    import APDS9960.Register.Utils
+
+    @spec to_binary(-127..127) :: <<_::8>>
+    def to_binary(value) when is_number(value) do
+      <<sign(value)::1, abs(value)::7>>
+    end
+
+    @spec parse(<<_::8>>) :: -127..127
+    def parse(<<byte>>) do
+      offset_correction_factor(<<byte>>)
+    end
   end
 
   # 0xA6 GPULSE Read/Write Gesture pulse count and length
@@ -542,16 +606,16 @@ defmodule APDS9960.Register do
     use TypedStruct
 
     typedstruct do
-      field(:gesture_pulse_length, 0..3, default: 0)
-      field(:gesture_pulse_count, 0..63, default: 0)
+      field(:pulse_length, 0..3, default: 0)
+      field(:pulse_count, 0..63, default: 0)
     end
 
     @spec to_binary(Enum.t()) :: <<_::8>>
     def to_binary(opts \\ []) do
       d = struct!(__MODULE__, opts)
 
-      b76 = d.gesture_pulse_length
-      b50 = d.gesture_pulse_count
+      b76 = d.pulse_length
+      b50 = d.pulse_count
 
       <<b76::2, b50::6>>
     end
@@ -559,8 +623,8 @@ defmodule APDS9960.Register do
     @spec parse(<<_::8>>) :: t()
     def parse(<<b76::2, b50::6>>) do
       %__MODULE__{
-        gesture_pulse_length: b76,
-        gesture_pulse_count: b50
+        pulse_length: b76,
+        pulse_count: b50
       }
     end
   end
@@ -569,6 +633,28 @@ defmodule APDS9960.Register do
   defmodule GCONF3 do
     @moduledoc false
     def address, do: 0xAA
+
+    use TypedStruct
+
+    typedstruct do
+      field(:dimension, 0..3, default: 0)
+    end
+
+    @spec to_binary(Enum.t()) :: <<_::8>>
+    def to_binary(opts \\ []) do
+      d = struct!(__MODULE__, opts)
+
+      b10 = d.dimension
+
+      <<0::6, b10::2>>
+    end
+
+    @spec parse(<<_::8>>) :: t()
+    def parse(<<0::6, b10::2>>) do
+      %__MODULE__{
+        dimension: b10
+      }
+    end
   end
 
   # 0xAB GCONF4 Read/Write Gesture configuration four
@@ -579,16 +665,16 @@ defmodule APDS9960.Register do
     use TypedStruct
 
     typedstruct do
-      field(:gesture_interrupt, 0 | 1, default: 0)
-      field(:gesture_mode, 0 | 1, default: 0)
+      field(:interrupt, 0 | 1, default: 0)
+      field(:mode, 0 | 1, default: 0)
     end
 
     @spec to_binary(Enum.t()) :: <<_::8>>
     def to_binary(opts \\ []) do
       d = struct!(__MODULE__, opts)
 
-      b1 = d.gesture_interrupt
-      b0 = d.gesture_mode
+      b1 = d.interrupt
+      b0 = d.mode
 
       <<0::6, b1::1, b0::1>>
     end
@@ -596,8 +682,8 @@ defmodule APDS9960.Register do
     @spec parse(<<_::8>>) :: t()
     def parse(<<0::6, b1::1, b0::1>>) do
       %__MODULE__{
-        gesture_interrupt: b1,
-        gesture_mode: b0
+        interrupt: b1,
+        mode: b0
       }
     end
   end
@@ -616,15 +702,15 @@ defmodule APDS9960.Register do
     use TypedStruct
 
     typedstruct do
-      field(:gesture_fifo_overflow, 0 | 1, default: 0)
-      field(:gesture_valid, 0 | 1, default: 0)
+      field(:fifo_overflow, 0 | 1, default: 0)
+      field(:valid, 0 | 1, default: 0)
     end
 
     @spec parse(<<_::8>>) :: t()
     def parse(<<0::6, b1::1, b0::1>>) do
       %__MODULE__{
-        gesture_fifo_overflow: b1,
-        gesture_valid: b0
+        fifo_overflow: b1,
+        valid: b0
       }
     end
   end

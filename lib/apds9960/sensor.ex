@@ -53,14 +53,13 @@ defmodule APDS9960.Sensor do
     :ok = Comm.set_enable(i2c, gesture: 0, proximity: 0, als: 0)
 
     # Reset basic config registers to power-on defaults
-    :ok = Comm.set_proximity_threshold(i2c, {0, 0})
+    :ok = Comm.set_proximity_threshold(i2c, low: 0, high: 0)
     :ok = Comm.set_interrupt_persistence(i2c, <<0>>)
-    :ok = Comm.set_gesture_proximity_enter_threshold(i2c, <<0>>)
-    :ok = Comm.set_gesture_exit_threshold(i2c, <<0>>)
+    :ok = Comm.set_gesture_proximity_threshold(i2c, enter: 0, exit: 0)
     :ok = Comm.set_gesture_conf1(i2c, <<0>>)
     :ok = Comm.set_gesture_conf2(i2c, <<0>>)
     :ok = Comm.set_gesture_conf4(i2c, <<0>>)
-    :ok = Comm.set_gesture_pulse_count(i2c, <<0>>)
+    :ok = Comm.set_gesture_pulse(i2c, <<0>>)
     :ok = Comm.set_adc_integration_time(i2c, <<255>>)
     :ok = Comm.set_control(i2c, als_and_color_gain: 1)
 
@@ -81,36 +80,34 @@ defmodule APDS9960.Sensor do
   @spec set_defaults!(Sensor.t()) :: :ok
   def set_defaults!(%Sensor{transport: i2c}) do
     # Trigger proximity interrupt at >= 5, PPERS: 4 cycles
-    :ok = Comm.set_proximity_threshold(i2c, {0, 5})
+    :ok = Comm.set_proximity_threshold(i2c, low: 0, high: 5)
     :ok = Comm.set_interrupt_persistence(i2c, proximity: 4)
 
     # Enter gesture engine at >= 5 proximity counts
-    :ok = Comm.set_gesture_proximity_enter_threshold(i2c, <<5>>)
-
     # Exit gesture engine if all counts drop below 30
-    :ok = Comm.set_gesture_exit_threshold(i2c, <<30>>)
+    :ok = Comm.set_gesture_proximity_threshold(i2c, enter: 5, exit: 30)
 
     # GEXPERS: 2 (4 cycles), GEXMSK: 0 (default) GFIFOTH: 2 (8 datasets)
     :ok =
       Comm.set_gesture_conf1(i2c,
-        gesture_fifo_threshold: 2,
-        gesture_exit_mask: 0,
-        gesture_exit_persistence: 2
+        fifo_threshold: 2,
+        exit_mask: 0,
+        exit_persistence: 2
       )
 
     # GGAIN: 2 (4x), GLDRIVE: 0 (100 mA), GWTIME: 1 (2.8 ms)
     :ok =
       Comm.set_gesture_conf2(i2c,
-        gesture_gain: 2,
-        gesture_led_drive_strength: 0,
-        gesture_wait_time: 1
+        gain: 2,
+        led_drive_strength: 0,
+        wait_time: 1
       )
 
     # GPULSE: 5 (6 pulses), GPLEN: 2 (16 us)
     :ok =
-      Comm.set_gesture_pulse_count(i2c,
-        gesture_pulse_count: 5,
-        gesture_pulse_length: 2
+      Comm.set_gesture_pulse(i2c,
+        pulse_count: 5,
+        pulse_length: 2
       )
 
     # ATIME: 0 (712ms color integration time, max count of 65535)

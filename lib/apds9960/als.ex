@@ -1,12 +1,12 @@
 defmodule APDS9960.ALS do
-  @moduledoc false
+  @moduledoc "The ambient light and RGB color sensing."
 
   alias APDS9960.{Comm, Sensor}
 
   @doc """
   Returns all the current Color / ALS settings.
   """
-  @spec settings(APDS9960.Sensor.t()) :: %{
+  @spec settings(Sensor.t()) :: %{
           adc_integration_time: byte,
           enabled: boolean,
           gain: 0..3,
