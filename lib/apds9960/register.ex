@@ -81,6 +81,25 @@ defmodule APDS9960.Register do
   defmodule AILTL do
     @moduledoc false
     def address, do: 0x84
+
+    use TypedStruct
+
+    typedstruct do
+      field(:low, 0..0xFFFF, default: 0)
+      field(:high, 0..0xFFFF, default: 0)
+    end
+
+    @spec to_binary(Enum.t()) :: <<_::32>>
+    def to_binary(opts \\ []) do
+      d = struct!(__MODULE__, opts)
+
+      <<d.low::little-16, d.high::little-16>>
+    end
+
+    @spec parse(<<_::32>>) :: t()
+    def parse(<<low::little-16, high::little-16>>) do
+      %__MODULE__{low: low, high: high}
+    end
   end
 
   # 0x89 PILT Read/Write Proximity interrupt low/high thresholds
@@ -143,6 +162,28 @@ defmodule APDS9960.Register do
   defmodule CONFIG1 do
     @moduledoc false
     def address, do: 0x8D
+
+    use TypedStruct
+
+    typedstruct do
+      field(:wait_long, 0 | 1, default: 0)
+    end
+
+    @spec to_binary(Enum.t()) :: <<_::8>>
+    def to_binary(opts \\ []) do
+      d = struct!(__MODULE__, opts)
+
+      b1 = d.wait_long
+
+      <<0::1, 1::1, 1::1, 0::1, 0::1, 0::1, b1::1, 0::1>>
+    end
+
+    @spec parse(<<_::8>>) :: t()
+    def parse(<<0::1, 1::1, 1::1, 0::1, 0::1, 0::1, b1::1, 0::1>>) do
+      %__MODULE__{
+        wait_long: b1
+      }
+    end
   end
 
   # 0x8E PPULSE Read/Write Proximity pulse count and length

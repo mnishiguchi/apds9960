@@ -35,7 +35,7 @@ defmodule APDS9960.Proximity do
     }
   end
 
-  ## Enable
+  ## Proximity Enable
 
   @spec enabled?(Sensor.t()) :: boolean
   def enabled?(%Sensor{transport: i2c}) do
@@ -89,13 +89,13 @@ defmodule APDS9960.Proximity do
 
   @spec get_pulse(Sensor.t()) :: %{count: byte, length: 0..3}
   def get_pulse(%Sensor{transport: i2c}) do
-    {:ok, x} = Comm.get_pulse(i2c)
+    {:ok, x} = Comm.get_proximity_pulse(i2c)
     %{count: x.proximity_pulse_count, length: x.proximity_pulse_length}
   end
 
   @spec set_pulse(Sensor.t(), Enum.t()) :: :ok
   def set_pulse(%Sensor{transport: i2c}, opts) do
-    Comm.set_pulse(i2c, opts)
+    Comm.set_proximity_pulse(i2c, opts)
   end
 
   ## Proximity Gain Control
@@ -152,14 +152,14 @@ defmodule APDS9960.Proximity do
 
   ## Proximity Status
 
-  @spec status(Sensor.t()) :: %{interrupt: 0 | 1, saturation: 0 | 1, valid: 0 | 1}
+  @spec status(Sensor.t()) :: %{interrupt: boolean, saturation: boolean, valid: boolean}
   def status(%Sensor{transport: i2c}) do
     {:ok, x} = Comm.status(i2c)
 
     %{
-      interrupt: x.proximity_interrupt,
-      saturation: x.proximity_or_gesture_saturation,
-      valid: x.proximity_valid
+      interrupt: x.proximity_interrupt == 1,
+      saturation: x.proximity_or_gesture_saturation == 1,
+      valid: x.proximity_valid == 1
     }
   end
 
