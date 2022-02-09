@@ -1,5 +1,5 @@
 defmodule APDS9960.Proximity do
-  @moduledoc "The proximity detection feature."
+  @moduledoc "The proximity detection."
 
   alias APDS9960.{Comm, Sensor}
 
@@ -67,9 +67,9 @@ defmodule APDS9960.Proximity do
     %{low: x.low, high: x.high}
   end
 
-  @spec set_threshold(Sensor.t(), {low :: byte, high :: byte}) :: :ok
-  def set_threshold(%Sensor{transport: i2c}, {low, high}) do
-    Comm.set_proximity_threshold(i2c, {low, high})
+  @spec set_threshold(Sensor.t(), Enum.t()) :: :ok
+  def set_threshold(%Sensor{transport: i2c}, opts) do
+    Comm.set_proximity_threshold(i2c, opts)
   end
 
   ## Proximity Interrupt Persistence
@@ -90,7 +90,7 @@ defmodule APDS9960.Proximity do
   @spec get_pulse(Sensor.t()) :: %{count: byte, length: 0..3}
   def get_pulse(%Sensor{transport: i2c}) do
     {:ok, x} = Comm.get_proximity_pulse(i2c)
-    %{count: x.proximity_pulse_count, length: x.proximity_pulse_length}
+    %{count: x.pulse_count, length: x.pulse_length}
   end
 
   @spec set_pulse(Sensor.t(), Enum.t()) :: :ok
@@ -178,8 +178,8 @@ defmodule APDS9960.Proximity do
     {:ok, x} = Comm.get_proximity_offset(i2c)
 
     %{
-      up_right: x.proximity_offset_up_right,
-      down_left: x.proximity_offset_down_left
+      up_right: x.up_right,
+      down_left: x.down_left
     }
   end
 

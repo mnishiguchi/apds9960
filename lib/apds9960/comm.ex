@@ -77,13 +77,15 @@ defmodule APDS9960.Comm do
     {:ok, Register.PILT.parse(data)}
   end
 
-  @spec set_proximity_threshold(Transport.t(), <<_::16>> | {low :: byte, high :: byte}) :: :ok
+  @spec set_proximity_threshold(Transport.t(), <<_::16>> | Enum.t()) :: :ok
   def set_proximity_threshold(%Transport{} = i2c, <<low, high>>) do
     i2c.write_fn.([Register.PILT.address(), <<low, high>>])
   end
 
-  def set_proximity_threshold(%Transport{} = i2c, {low, high}) do
-    i2c.write_fn.([Register.PILT.address(), <<low, high>>])
+  def set_proximity_threshold(%Transport{} = i2c, opts) do
+    {:ok, parsed_data} = get_proximity_threshold(i2c)
+    new_data = parsed_data |> Register.set_bits(opts) |> Register.to_binary()
+    i2c.write_fn.([Register.PILT.address(), new_data])
   end
 
   ## 0x8C PERS Read/Write Interrupt persistence filters (non-gesture)
@@ -242,18 +244,23 @@ defmodule APDS9960.Comm do
     i2c.write_fn.([Register.CONFIG3.address(), new_data])
   end
 
-  ## 0xA0 GPENTH Read/Write Gesture proximity enter threshold
+  ## 0xA0 GPENTH Read/Write Gesture proximity enter/exit threshold
 
-  @spec set_gesture_proximity_enter_threshold(Transport.t(), <<_::8>>) :: :ok
-  def set_gesture_proximity_enter_threshold(%Transport{} = i2c, <<byte>>) do
-    i2c.write_fn.([Register.GPENTH.address(), <<byte>>])
+  @spec get_gesture_proximity_threshold(Transport.t()) :: {:ok, Register.GPENTH.t()}
+  def get_gesture_proximity_threshold(%Transport{} = i2c) do
+    {:ok, <<_::16>> = data} = i2c.write_read_fn.([Register.GPENTH.address()], 2)
+    {:ok, Register.GPENTH.parse(data)}
   end
 
-  ## 0xA1 GEXTH R/W Gesture exit threshold
+  @spec set_gesture_proximity_threshold(Transport.t(), <<_::16>> | Enum.t()) :: :ok
+  def set_gesture_proximity_threshold(%Transport{} = i2c, <<enter_th, exit_th>>) do
+    i2c.write_fn.([Register.GPENTH.address(), <<enter_th, exit_th>>])
+  end
 
-  @spec set_gesture_exit_threshold(Transport.t(), <<_::8>>) :: :ok
-  def set_gesture_exit_threshold(%Transport{} = i2c, <<byte>>) do
-    i2c.write_fn.([Register.GEXTH.address(), <<byte>>])
+  def set_gesture_proximity_threshold(%Transport{} = i2c, opts) do
+    {:ok, parsed_data} = get_gesture_proximity_threshold(i2c)
+    new_data = parsed_data |> Register.set_bits(opts) |> Register.to_binary()
+    i2c.write_fn.([Register.GPENTH.address(), new_data])
   end
 
   ## 0xA2 GCONF1 Read/Write Gesture configuration one
@@ -294,23 +301,81 @@ defmodule APDS9960.Comm do
     i2c.write_fn.([Register.GCONF2.address(), new_data])
   end
 
+  ## 0xA4 GOFFSET_U R/W Gesture UP offset register
+  ## 0xA5 GOFFSET_D R/W Gesture DOWN offset register
+  ## 0xA7 GOFFSET_L R/W Gesture LEFT offset register
+  ## 0xA9 GOFFSET_R R/W Gesture RIGHT offset register
+
+  @spec get_gesture_offset(Transport.t()) ::
+          {:ok, %{down: -127..127, left: -127..127, right: -127..127, up: -127..127}}
+  def get_gesture_offset(%Transport{} = i2c) do
+    {:ok, data_u} = i2c.write_read_fn.([Register.GOFFSET_U.address()], 1)
+    {:ok, data_d} = i2c.write_read_fn.([Register.GOFFSET_D.address()], 1)
+    {:ok, data_l} = i2c.write_read_fn.([Register.GOFFSET_L.address()], 1)
+    {:ok, data_r} = i2c.write_read_fn.([Register.GOFFSET_R.address()], 1)
+
+    {:ok,
+     %{
+       up: Register.GOFFSET_U.parse(data_u),
+       down: Register.GOFFSET_D.parse(data_d),
+       left: Register.GOFFSET_L.parse(data_l),
+       right: Register.GOFFSET_R.parse(data_r)
+     }}
+  end
+
+  @spec set_gesture_offset(Transport.t(), Enum.t()) :: :ok
+  def set_gesture_offset(%Transport{} = i2c, opts) do
+    if data_up = opts[:up] do
+      :ok = i2c.write_fn.([Register.GOFFSET_U.address(), Register.GOFFSET_U.to_binary(data_up)])
+    end
+
+    if data_down = opts[:down] do
+      :ok = i2c.write_fn.([Register.GOFFSET_D.address(), Register.GOFFSET_D.to_binary(data_down)])
+    end
+
+    if data_left = opts[:left] do
+      :ok = i2c.write_fn.([Register.GOFFSET_L.address(), Register.GOFFSET_L.to_binary(data_left)])
+    end
+
+    if data_right = opts[:right] do
+      :ok =
+        i2c.write_fn.([Register.GOFFSET_R.address(), Register.GOFFSET_R.to_binary(data_right)])
+    end
+
+    :ok
+  end
+
   ## 0xA6 GPULSE Read/Write Gesture pulse count and length
 
-  @spec get_gesture_pulse_count(Transport.t()) :: {:ok, Register.GPULSE.t()}
-  def get_gesture_pulse_count(%Transport{} = i2c) do
+  @spec get_gesture_pulse(Transport.t()) :: {:ok, Register.GPULSE.t()}
+  def get_gesture_pulse(%Transport{} = i2c) do
     {:ok, data} = i2c.write_read_fn.([Register.GPULSE.address()], 1)
     {:ok, Register.GPULSE.parse(data)}
   end
 
-  @spec set_gesture_pulse_count(Transport.t(), <<_::8>> | Enum.t()) :: :ok
-  def set_gesture_pulse_count(%Transport{} = i2c, <<byte>>) do
+  @spec set_gesture_pulse(Transport.t(), <<_::8>> | Enum.t()) :: :ok
+  def set_gesture_pulse(%Transport{} = i2c, <<byte>>) do
     i2c.write_fn.([Register.GPULSE.address(), <<byte>>])
   end
 
-  def set_gesture_pulse_count(%Transport{} = i2c, opts) do
-    {:ok, parsed_data} = get_gesture_pulse_count(i2c)
+  def set_gesture_pulse(%Transport{} = i2c, opts) do
+    {:ok, parsed_data} = get_gesture_pulse(i2c)
     new_data = parsed_data |> Register.set_bits(opts) |> Register.to_binary()
     i2c.write_fn.([Register.GPULSE.address(), new_data])
+  end
+
+  ## 0xAA GCONF3 R/W Gesture configuration three
+
+  @spec get_gesture_conf3(Transport.t()) :: {:ok, Register.GCONF3.t()}
+  def get_gesture_conf3(%Transport{} = i2c) do
+    {:ok, data} = i2c.write_read_fn.([Register.GCONF3.address()], 1)
+    {:ok, Register.GCONF3.parse(data)}
+  end
+
+  def set_gesture_conf3(%Transport{} = i2c, opts) do
+    {:ok, parsed_data} = get_gesture_conf3(i2c)
+    new_data = parsed_data |> Register.set_bits(opts) |> Register.to_binary()
+    i2c.write_fn.([Register.GCONF3.address(), new_data])
   end
 
   ## 0xAB GCONF4 Read/Write Gesture configuration four
