@@ -9,7 +9,6 @@ defmodule APDS9960 do
   defdelegate enable(sensor, engine), to: APDS9960.Sensor
   defdelegate reset!(sensor), to: APDS9960.Sensor
   defdelegate set_defaults!(sensor), to: APDS9960.Sensor
-  defdelegate status(sensor), to: APDS9960.Sensor
 
   @doc """
   Reads the proximity data. The proximity value is a number from 0 to 255 where the higher the
