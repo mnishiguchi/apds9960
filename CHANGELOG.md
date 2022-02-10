@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2022-02-09
+
+- Add setters and getters for settings
+- Remove top-level `status/1`
+
 ## [0.3.1] - 2022-02-07
 
 - Refactor top level module
@@ -24,8 +29,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release
 - Implement proximity detection
 
-[Unreleased]: https://github.com/mnishiguchi/apds9960/compare/v0.3.1...HEAD
-[0.3.0]: https://github.com/mnishiguchi/apds9960/compare/v0.3.0..v0.3.1
+[Unreleased]: https://github.com/mnishiguchi/apds9960/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/mnishiguchi/apds9960/compare/v0.3.1..v0.4.0
+[0.3.1]: https://github.com/mnishiguchi/apds9960/compare/v0.3.0..v0.3.1
 [0.3.0]: https://github.com/mnishiguchi/apds9960/compare/v0.2.0..v0.3.0
 [0.2.0]: https://github.com/mnishiguchi/apds9960/compare/v0.1.0..v0.2.0
 [0.1.0]: https://github.com/mnishiguchi/apds9960/releases/tag/v0.1.0

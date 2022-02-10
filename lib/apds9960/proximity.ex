@@ -6,7 +6,7 @@ defmodule APDS9960.Proximity do
   @doc """
   Returns all the current proximity settings.
   """
-  @spec settings(APDS9960.Sensor.t()) :: %{
+  @spec settings(Sensor.t()) :: %{
           enabled: boolean,
           gain: 0..3,
           gain_compensation: %{enabled: boolean, mask: byte},

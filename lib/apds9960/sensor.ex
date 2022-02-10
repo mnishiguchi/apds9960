@@ -119,21 +119,6 @@ defmodule APDS9960.Sensor do
     :ok
   end
 
-  @doc "Returns the status of the device."
-  @spec status(Sensor.t()) :: %{
-          als_interrupt: byte,
-          als_valid: byte,
-          clear_photo_diode_saturation: byte,
-          gesture_interrupt: byte,
-          proximity_interrupt: byte,
-          proximity_or_gesture_saturation: byte,
-          proximity_valid: byte
-        }
-  def status(%Sensor{transport: i2c}) do
-    {:ok, struct} = Comm.status(i2c)
-    Map.from_struct(struct)
-  end
-
   @doc "Enable an engine for a desired feature."
   @spec enable(Sensor.t(), engine) :: :ok
   def enable(%Sensor{transport: i2c}, :color), do: Comm.set_enable(i2c, als: 1)
